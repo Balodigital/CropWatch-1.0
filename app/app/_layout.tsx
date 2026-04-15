@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Load i18n instance
 import '../i18n';
@@ -17,40 +18,57 @@ import {
 } from '@expo-google-fonts/inter';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
-export default function RootLayout() {
+function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { loading, session, hasFinishedOnboarding } = useAuth();
   
-  const [loaded, error] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
   });
 
   useEffect(() => {
-    if (loaded || error) {
+    if ((fontsLoaded || fontError) && !loading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error]);
+  }, [fontsLoaded, fontError, loading]);
 
-  if (!loaded && !error) {
+  if ((!fontsLoaded && !fontError) || loading) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Protected Group */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        
+        {/* Onboarding Flow */}
+        <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(onboarding)" options={{ gestureEnabled: false }} />
+        
+        {/* Auth Flow */}
+        <Stack.Screen name="(auth)" options={{ presentation: 'card' }} />
+        
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

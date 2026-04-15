@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 /**
  * CropWatch Typography
- * Mapped from design-tokens.tokens.json using Google Fonts (Inter)
+ * Strictly derived from tokens.css
  */
 
 export const Typography = StyleSheet.create({

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const diagnoseRouter = require('./routes/diagnose');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/diagnose', diagnoseRouter);
+app.use('/api/auth', authRouter);
 
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
