@@ -55,8 +55,11 @@ export async function submitDiagnosis(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return { success: false, error: errorData.error || 'Server error' };
+      const errorData = await response.json().catch(() => ({}));
+      return { 
+        success: false, 
+        error: errorData.error || `Server error (${response.status}). Check if API tunnel is active.` 
+      };
     }
 
     const data = await response.json();
