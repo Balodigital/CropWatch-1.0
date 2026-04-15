@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { resetPassword } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ChevronLeft, Mail, CheckCircle2 } from 'lucide-react-native';
@@ -26,32 +27,22 @@ export default function ForgotPasswordScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleResetRequest = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email');
-      return;
-    }
+    if (!emailValid) return;
 
     setLoading(true);
     try {
-      // Calling our custom backend SMTP endpoint
-      const response = await fetch('http://localhost:3000/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
+      const { error } = await resetPassword(email);
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to send reset email');
+      if (error) {
+        Alert.alert('Error', error);
+      } else {
+        setIsSent(true);
       }
-
-      setIsSent(true);
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Error', 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -61,17 +52,19 @@ export default function ForgotPasswordScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.successContainer}>
-          <CheckCircle2 size={80} color={theme.success} />
-          <Text style={[Typography.headlineMedium, { color: theme.onSurface, marginTop: 24, textAlign: 'center' }]}>
+          <View style={[styles.iconContainer, { backgroundColor: theme.success + '20' }]}>
+            <CheckCircle2 size={48} color={theme.success} strokeWidth={2.5} />
+          </View>
+          <Text style={[Typography.headlineSmall, { color: theme.onSurface, marginTop: 24, textAlign: 'center' }]}>
             Check Your Email
           </Text>
-          <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 12, textAlign: 'center' }]}>
-            We've sent password reset instructions to {email}.
+          <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 12, textAlign: 'center', marginBottom: 40 }]}>
+            We've sent password reset instructions to {email}. Please check your inbox and follow the link to reset your password.
           </Text>
           <Button
             title="Back to Sign In"
             onPress={() => router.replace('/(auth)/login')}
-            style={{ width: '100%', marginTop: 40 }}
+            style={{ width: '100%' }}
           />
         </View>
       </SafeAreaView>
@@ -98,7 +91,7 @@ export default function ForgotPasswordScreen() {
               Forgot Password
             </Text>
             <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-              Enter your email and we'll send you a link to reset your password.
+              Enter your email and we'll send you a secure link to reset your password.
             </Text>
           </View>
 
@@ -111,12 +104,14 @@ export default function ForgotPasswordScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoFocus
+              success={emailValid}
             />
 
             <Button
               title="Send Reset Link"
               onPress={handleResetRequest}
               loading={loading}
+              disabled={!emailValid}
               icon={<Mail size={18} color={theme.onPrimary} />}
               style={styles.resetButton}
             />
@@ -157,6 +152,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

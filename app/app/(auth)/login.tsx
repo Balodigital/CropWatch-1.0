@@ -14,10 +14,10 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { loginWithEmail } from '@/lib/api';
+import { signIn } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Sprout } from 'lucide-react-native';
+import { ChevronLeft, Sprout } from 'lucide-react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -27,19 +27,22 @@ export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const formValid = emailValid && password.length > 0;
+
+  const handleSignIn = async () => {
+    if (!formValid) return;
 
     setLoading(true);
     try {
-      const { error } = await loginWithEmail(email, password);
-      if (error) throw error;
-      router.replace('/(tabs)');
+      const { error } = await signIn(email, password);
+      if (error) {
+        Alert.alert('Sign In Failed', error);
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (err: any) {
-      Alert.alert('Login Failed', err.message);
+      Alert.alert('Sign In Failed', 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -52,26 +55,35 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.backButton}
+          >
+            <ChevronLeft size={24} color={theme.primary} />
+            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>Back</Text>
+          </TouchableOpacity>
+
           <View style={styles.header}>
             <View style={[styles.logoContainer, { backgroundColor: theme.primaryContainer }]}>
               <Sprout size={32} color={theme.primary} />
             </View>
-            <Text style={[Typography.headlineLarge, { color: theme.onSurface, marginTop: 24 }]}>
+            <Text style={[styles.headline, Typography.headlineLarge, { color: theme.onSurface }]}>
               Welcome Back
             </Text>
-            <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-              Sign in to continue monitoring your crops
+            <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8, textAlign: 'center' }]}>
+              Sign in to continue monitoring your crops and getting AI diagnoses.
             </Text>
           </View>
 
           <View style={styles.form}>
             <Input
-              label="Email"
+              label="Email Address"
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              success={emailValid}
             />
             <Input
               label="Password"
@@ -92,8 +104,9 @@ export default function LoginScreen() {
 
             <Button
               title="Sign In"
-              onPress={handleLogin}
+              onPress={handleSignIn}
               loading={loading}
+              disabled={!formValid}
               style={styles.loginButton}
             />
 
@@ -121,12 +134,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 32,
+    marginLeft: -8,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 40,
   },
   logoContainer: {
     width: 64,
@@ -134,17 +153,20 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 24,
+  },
+  headline: {
+    textAlign: 'center',
   },
   form: {
     flex: 1,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   loginButton: {
     width: '100%',
-    marginTop: 8,
   },
   footer: {
     flexDirection: 'row',

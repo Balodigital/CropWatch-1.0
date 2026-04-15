@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -14,10 +14,14 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { signUpWithEmail } from '@/lib/api';
+import { signUp } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Sprout, ChevronLeft } from 'lucide-react-native';
+import { StrengthMeter } from '@/components/auth/StrengthMeter';
+import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
+import { SuccessOverlay } from '@/components/auth/SuccessOverlay';
+import { usePasswordValidation } from '@/hooks/use-password-validation';
+import { ChevronLeft } from 'lucide-react-native';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
@@ -25,32 +29,31 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
-  const handleSignUp = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+  const { requirements, strength, isValid: passwordValid } = usePasswordValidation(password);
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const passwordsMatch = password === confirmPassword && password !== '';
+  const formValid = fullName.trim().length > 0 && emailValid && passwordValid && passwordsMatch;
+
+  const handleSignUp = async () => {
+    if (!formValid) return;
 
     setLoading(true);
     try {
-      const { error } = await signUpWithEmail(email, password, { full_name: fullName });
-      if (error) throw error;
-      Alert.alert(
-        'Success', 
-        'Account created! Please check your email to verify your account.',
-        [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
-      );
+      const { error } = await signUp(email, password, { full_name: fullName });
+      if (error) {
+        Alert.alert('Sign Up Failed', error);
+      } else {
+        setShowSuccess(true);
+      }
     } catch (err: any) {
-      Alert.alert('Sign Up Failed', err.message);
+      Alert.alert('Sign Up Failed', 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -86,6 +89,7 @@ export default function RegisterScreen() {
               placeholder="Enter your full name"
               value={fullName}
               onChangeText={setFullName}
+              success={fullName.trim().length > 2}
             />
             <Input
               label="Email"
@@ -94,6 +98,7 @@ export default function RegisterScreen() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              success={emailValid}
             />
             <Input
               label="Password"
@@ -101,19 +106,27 @@ export default function RegisterScreen() {
               value={password}
               onChangeText={setPassword}
               isPassword
+              success={passwordValid}
             />
+            
+            <StrengthMeter strength={strength} />
+            <PasswordRequirements requirements={requirements} />
+
             <Input
               label="Confirm Password"
               placeholder="Confirm your password"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               isPassword
+              error={confirmPassword && !passwordsMatch ? "Passwords do not match" : ""}
+              success={passwordsMatch}
             />
 
             <Button
               title="Create Account"
               onPress={handleSignUp}
               loading={loading}
+              disabled={!formValid}
               style={styles.registerButton}
             />
 
@@ -130,6 +143,14 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <SuccessOverlay 
+        visible={showSuccess} 
+        onClose={() => {
+          setShowSuccess(false);
+          router.replace('/(auth)/login');
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -68,10 +68,10 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getHeight = () => {
     switch (size) {
-      case 'small': return 36;
-      case 'medium': return 48;
-      case 'large': return 56;
-      default: return 48;
+      case 'small': return 40;
+      case 'medium': return 52;
+      case 'large': return 60;
+      default: return 52;
     }
   };
 
@@ -97,7 +97,8 @@ export const Button: React.FC<ButtonProps> = ({
           borderWidth: variant === 'outline' ? 1.5 : 0,
           height: getHeight(),
           paddingHorizontal: getPaddingHorizontal(),
-          borderRadius: 12, // From design system (approximate tokens)
+          borderRadius: 12,
+          opacity: disabled ? 0.5 : 1,
         },
         style,
       ]}
@@ -105,19 +106,18 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator color={getTextColor()} />
       ) : (
-        <>
-          {icon}
+        <View style={styles.content}>
+          {icon && <View style={styles.iconContainer}>{icon}</View>}
           <Text
             style={[
               Typography.labelLarge,
               { color: getTextColor(), fontWeight: '600' },
-              icon ? { marginLeft: 8 } : null,
               textStyle,
             ]}
           >
             {title}
           </Text>
-        </>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -125,7 +125,6 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
@@ -142,5 +141,13 @@ const styles = StyleSheet.create({
         cursor: 'pointer',
       }
     }),
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    marginRight: 8,
   },
 });
