@@ -1,0 +1,19 @@
+{
+  "name": "cropwatch-api",
+  "version": "1.0.0",
+  "description": "CropWatch Backend API Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "tunnel": "lt --port 3000"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "localtunnel": "^2.0.2"
+  }
+}
