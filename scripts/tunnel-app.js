@@ -1,54 +1,98 @@
 const { spawn } = require('child_process');
+const http = require('http');
 
-console.log('📡 Requesting secure localtunnel for your app to bypass Ngrok blockages...');
+const isWin = process.platform === 'win32';
+const npxCmd = isWin ? 'npx.cmd' : 'npx';
 
-// Start localtunnel instead of ngrok because Ngrok CRL checks are timing out
-const tunnel = spawn('npx', ['lt', '--port', '8081'], { shell: true });
+console.log('📡 Starting Expo and preparing secure tunnel...');
 
-let expoStarted = false;
+// 1. First, start Expo
+const expoProcess = spawn(npxCmd, ['expo', 'start'], {
+    stdio: 'inherit',
+    shell: true
+});
 
-tunnel.stdout.on('data', (data) => {
-  const output = data.toString();
-  
-  // Extract URL from localtunnel's log format (e.g., your url is: https://xxxx.loca.lt)
-  const match = output.match(/url is: (https:\/\/[^\s]+)/);
+let tunnelProcess = null;
 
-  if (match && !expoStarted) {
-    expoStarted = true;
-    const tunnelUrl = match[1];
+// Function to check if Metro is ready (responding to requests)
+function checkMetroReady(callback) {
+    const options = {
+        hostname: '127.0.0.1',
+        port: 8081,
+        path: '/',
+        method: 'GET',
+        timeout: 2000
+    };
+
+    const req = http.request(options, (res) => {
+        callback(true);
+    });
+
+    req.on('error', () => {
+        callback(false);
+    });
+
+    req.on('timeout', () => {
+        req.destroy();
+        callback(false);
+    });
+
+    req.end();
+}
+
+function startTunnel() {
+    console.log('\n🌐 Metro is ready. Establishing localtunnel...');
     
-    console.log(`\n✅ Tunnel active at: ${tunnelUrl}`);
-    console.log(`⚠️  NOTE: When your teammates scan the QR code and open this URL, they might see a "Friendly Reminder" screen. They just need to click "Click to Continue" to enter the app!\n`);
-    console.log('🚀 Starting Expo with custom QR tunnel...\n');
+    if (tunnelProcess) tunnelProcess.kill();
 
-    // Start Expo using the LocalTunnel explicitly
-    const expoProcess = spawn('npx', ['expo', 'start'], {
-      stdio: 'inherit',
-      shell: true,
-      env: {
-        ...process.env,
-        EXPO_PACKAGER_PROXY_URL: tunnelUrl,
-      }
+    tunnelProcess = spawn(npxCmd, ['lt', '--port', '8081'], { shell: true });
+
+    tunnelProcess.stdout.on('data', (data) => {
+        const output = data.toString();
+        const match = output.match(/url is: (https:\/\/[^\s]+)/);
+        if (match) {
+            const tunnelUrl = match[1];
+            process.env.EXPO_PACKAGER_PROXY_URL = tunnelUrl;
+            
+            console.log(`\n✅ Tunnel active at: ${tunnelUrl}`);
+            console.log(`⚠️  CRITICAL: Have your teammates open this URL in their mobile browser FIRST:`);
+            console.log(`👉 ${tunnelUrl}`);
+            console.log(`They MUST click "Click to Continue" on that page, then they can scan the QR code.\n`);
+            console.log(`(If you don't see the QR code, press 'r' in the terminal to refresh Expo)\n`);
+        }
     });
 
-    expoProcess.on('close', (code) => {
-      console.log(`Expo exited with code ${code}`);
-      tunnel.kill(); 
-      process.exit(code);
+    tunnelProcess.on('close', (code) => {
+        if (code !== 0) {
+            console.log('⚠️  Tunnel disconnected. Retrying in 5 seconds...');
+            setTimeout(startTunnel, 5000);
+        }
     });
-  }
-});
+}
 
-tunnel.stderr.on('data', (data) => {
-  // Suppress warnings unless critical
-});
+// Wait for Metro to be ready before starting the tunnel
+// Check every 10 seconds to avoid overloading Metro while it's bundling
+const checkInterval = setInterval(() => {
+    checkMetroReady((ready) => {
+        if (ready) {
+            clearInterval(checkInterval);
+            startTunnel();
+        }
+    });
+}, 10000);
 
-tunnel.on('close', (code) => {
-  if (code !== 0) console.log(`Tunnel process exited with code ${code}`);
+
+expoProcess.on('close', (code) => {
+    console.log(`Expo exited with code ${code}`);
+    if (tunnelProcess) tunnelProcess.kill();
+    process.exit(code || 0);
 });
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-    tunnel.kill();
+    if (tunnelProcess) tunnelProcess.kill();
+    expoProcess.kill();
     process.exit();
 });
+
+
