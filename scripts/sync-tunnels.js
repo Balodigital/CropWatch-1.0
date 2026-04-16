@@ -28,18 +28,22 @@ function updateAppEnv(url) {
   console.log(`✅ Updated app/.env with API URL: ${url}`);
 }
 
-// Start localtunnel for the API
+// Start ngrok for the API
 console.log(`📡 Opening tunnel for API on port ${API_PORT}...`);
-const lt = spawn('npx', ['localtunnel', '--port', API_PORT.toString()], {
+const lt = spawn('npx', ['ngrok', 'http', API_PORT.toString()], {
   shell: true
 });
 
 lt.stdout.on('data', (data) => {
   const output = data.toString();
-  const urlMatch = output.match(/https?:\/\/[^\s]+/);
+  console.log(output);
+  
+  // ngrok outputs URL in JSON format like: {"url":"https://xxx.ngrok-free.app"}
+  const jsonMatch = output.match(/"url"\s*:\s*"([^"]+)"/);
+  const urlMatch = jsonMatch ? jsonMatch[1] : output.match(/https?:\/\/[^\s]+/);
   
   if (urlMatch) {
-    const url = urlMatch[0];
+    const url = urlMatch[1] || urlMatch[0];
     console.log(`🌐 API Tunnel Live: ${url}`);
     updateAppEnv(url);
     console.log('\n🚀 Step 2: Now run this in another terminal:');

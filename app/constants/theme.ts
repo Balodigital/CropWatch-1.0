@@ -5,38 +5,47 @@
 
 export const Colors = {
   light: {
-    primary: '#2c6a4f', // --ref-color-primary-key-color
-    onPrimary: '#ffffff', // --sys-color-primary-roles-on-primary
-    primaryContainer: '#dbf0e7', // --ref-color-primary-primary90
-    onPrimaryContainer: '#2d6c51', // --sys-color-primary-roles-on-primary-container
+    primary: '#2c6a4f',
+    onPrimary: '#ffffff',
+    primaryContainer: '#dbf0e7',
+    onPrimaryContainer: '#2d6c51',
     
-    secondary: '#618e3e', // --ref-color-secondary-secondary40
+    secondary: '#618e3e',
     onSecondary: '#ffffff',
     
-    tertiary: '#aca120', // --ref-color-tertiary-tertiary40
+    tertiary: '#aca120',
     onTertiary: '#ffffff',
     
-    error: '#aa2222', // --ref-color-error-error40
+    error: '#aa2222',
     onError: '#ffffff',
     
-    background: '#fafafa', // --ref-color-neutral-neutral98
-    onBackground: '#1f1f1f', // --ref-color-neutral-neutral10
+    background: '#fafafa',
+    onBackground: '#1f1f1f',
     
-    surface: '#ffffff', // --ref-color-neutral-neutral100
+    surface: '#ffffff',
     onSurface: '#1f1f1f',
-    surfaceVariant: '#e6e6e6', // --ref-color-neutral-variant-neutral90
-    onSurfaceVariant: '#4c4c4c', // --ref-color-neutral-variant-neutral30
+    surfaceVariant: '#e6e6e6',
+    onSurfaceVariant: '#4c4c4c',
     
-    outline: '#808080', // --ref-color-neutral-variant-neutral50
+    outline: '#808080',
     
-    success: '#3e8e41', // --ref-color-success-success40
-    warning: '#cc9900', // --ref-color-warning-warning40
-    accent: '#a34829', // --ref-color-accent-accent40
+    success: '#3e8e41',
+    warning: '#cc9900',
+    accent: '#a34829',
     
-    muted: '#9e9e9e', // --ref-color-neutral-neutral60
+    muted: '#9e9e9e',
+    
+    // Legacy mappings for compatibility
+    text: '#1f1f1f',
+    textSecondary: '#4c4c4c',
+    tabIconSelected: '#2c6a4f',
+    tabIconDefault: '#808080',
+    primaryLight: '#dbf0e7',
+    icon: '#4c4c4c',
+    tint: '#2c6a4f',
   },
   dark: {
-    primary: '#6fc39e', // dim primary
+    primary: '#6fc39e',
     onPrimary: '#0f241b',
     primaryContainer: '#1e4836',
     onPrimaryContainer: '#dbf0e7',
@@ -65,6 +74,15 @@ export const Colors = {
     accent: '#d67b5c',
     
     muted: '#858585',
+    
+    // Legacy mappings for compatibility
+    text: '#ebebeb',
+    textSecondary: '#cccccc',
+    tabIconSelected: '#6fc39e',
+    tabIconDefault: '#999999',
+    primaryLight: '#1e4836',
+    icon: '#cccccc',
+    tint: '#6fc39e',
   },
 };
 

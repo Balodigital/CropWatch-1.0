@@ -97,8 +97,15 @@ export default function HistoryScreen() {
       <TouchableOpacity
         style={[styles.historyCard, { backgroundColor: colors.surface }]}
         onPress={() => {
-          if (item.status === 'completed') {
-            router.push(`/result/${item.id}`);
+          if (item.status === 'completed' && item.diagnosis.length > 0) {
+            router.push({
+              pathname: '/result',
+              params: {
+                diagnosis: JSON.stringify(item.diagnosis),
+                cropType: item.cropType,
+                image: '',
+              },
+            });
           }
         }}
         activeOpacity={item.status === 'completed' ? 0.7 : 1}
