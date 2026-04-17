@@ -5,7 +5,10 @@ const { spawn } = require('child_process');
 const APP_ENV_PATH = path.join(__dirname, '..', 'app', '.env');
 const API_PORT = 3000;
 
-console.log('🌱 Starting CropWatch Tunnel Sync...');
+const isWin = process.platform === 'win32';
+const npxCmd = isWin ? 'npx.cmd' : 'npx';
+
+console.log('🌱 Starting CropWatch Tunnel Sync via Cloudflare...');
 
 // Function to update .env file
 function updateAppEnv(url) {
@@ -28,34 +31,41 @@ function updateAppEnv(url) {
   console.log(`✅ Updated app/.env with API URL: ${url}`);
 }
 
-// Start ngrok for the API
+// Start Cloudflare Tunnel for the API
 console.log(`📡 Opening tunnel for API on port ${API_PORT}...`);
-const lt = spawn('npx', ['ngrok', 'http', API_PORT.toString()], {
+const tunnelProcess = spawn(npxCmd, ['cloudflared', 'tunnel', '--url', `http://localhost:${API_PORT}`], {
   shell: true
 });
 
-lt.stdout.on('data', (data) => {
+let apiUrlFound = false;
+
+tunnelProcess.stderr.on('data', (data) => {
   const output = data.toString();
-  console.log(output);
+  // Match Cloudflare tunnel URL
+  const match = output.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
   
-  // ngrok outputs URL in JSON format like: {"url":"https://xxx.ngrok-free.app"}
-  const jsonMatch = output.match(/"url"\s*:\s*"([^"]+)"/);
-  const urlMatch = jsonMatch ? jsonMatch[1] : output.match(/https?:\/\/[^\s]+/);
-  
-  if (urlMatch) {
-    const url = urlMatch[1] || urlMatch[0];
+  if (match && !apiUrlFound) {
+    const url = match[0];
+    apiUrlFound = true;
     console.log(`🌐 API Tunnel Live: ${url}`);
     updateAppEnv(url);
     console.log('\n🚀 Step 2: Now run this in another terminal:');
-    console.log('   cd app && npx expo start --tunnel');
+    console.log('   npm run tunnel:app');
     console.log('\n(Keep this terminal open to maintain the backend link)');
+  }
+
+  if (output.includes('ERR')) {
+    console.error(`❌ Tunnel Error: ${output.trim()}`);
   }
 });
 
-lt.stderr.on('data', (data) => {
-  console.error(`❌ Tunnel Error: ${data}`);
-});
-
-lt.on('close', (code) => {
+tunnelProcess.on('close', (code) => {
   console.log(`📡 Tunnel closed with code ${code}`);
 });
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  tunnelProcess.kill();
+  process.exit();
+});
+
