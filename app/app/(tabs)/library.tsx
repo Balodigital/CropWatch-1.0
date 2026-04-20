@@ -1,10 +1,21 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { CROPS_DATA } from '@/lib/supabase';
+
+const CROP_IMAGES: Record<string, any> = {
+  tomato: require('@/assets/images/crops/tomato.png'),
+  cassava: require('@/assets/images/crops/cassava.png'),
+  maize: require('@/assets/images/crops/maize.png'),
+  pepper: require('@/assets/images/crops/pepper.png'),
+  rice: require('@/assets/images/crops/rice.png'),
+  yam: require('@/assets/images/crops/yam.png'),
+  cowpea: require('@/assets/images/crops/cowpea.png'),
+  cocoa: require('@/assets/images/crops/cocoa.png'),
+};
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -52,7 +63,13 @@ export default function LibraryScreen() {
             onPress={() => router.push(`/library/${crop.dataset_context}`)}
             activeOpacity={0.7}
           >
-            <Text style={styles.cropIcon}>{crop.image}</Text>
+            <View style={[styles.imageContainer, { backgroundColor: colors.surfaceVariant }]}>
+              <Image 
+                source={CROP_IMAGES[crop.dataset_context] || { uri: crop.image }} 
+                style={styles.cropImage}
+                resizeMode="contain"
+              />
+            </View>
             <View style={styles.cropContent}>
               <Text style={[styles.cropName, { color: colors.text }]}>{crop.name}</Text>
               <Text style={[styles.cropContext, { color: colors.textSecondary }]}>
@@ -124,8 +141,8 @@ const styles = StyleSheet.create({
   cropCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -133,9 +150,20 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  cropIcon: {
-    fontSize: 40,
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
     marginRight: 16,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+  },
+  cropImage: {
+    width: '100%',
+    height: '100%',
+    aspectRatio: 1,
   },
   cropContent: {
     flex: 1,

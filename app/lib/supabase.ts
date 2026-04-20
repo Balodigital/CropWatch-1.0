@@ -41,12 +41,12 @@ export interface Crop {
 }
 
 export const CROPS_DATA: Crop[] = [
-  { id: 1, name: 'Tomato', dataset_context: 'tomato', image: '🍅' },
-  { id: 2, name: 'Cassava', dataset_context: 'cassava', image: '🫚' },
-  { id: 3, name: 'Maize', dataset_context: 'maize', image: '🌽' },
-  { id: 4, name: 'Pepper', dataset_context: 'pepper', image: '🌶️' },
-  { id: 5, name: 'Rice', dataset_context: 'rice', image: '🍚' },
-  { id: 6, name: 'Yam', dataset_context: 'yam', image: '🍠' },
-  { id: 7, name: 'Cowpea', dataset_context: 'cowpea', image: '🫘' },
-  { id: 8, name: 'Cocoa', dataset_context: 'cocoa', image: '🍫' },
+  { id: 1, name: 'Tomato', dataset_context: 'tomato', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 2, name: 'Cassava', dataset_context: 'cassava', image: 'https://images.unsplash.com/photo-1621464759391-77218327299a?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 3, name: 'Maize', dataset_context: 'maize', image: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 4, name: 'Pepper', dataset_context: 'pepper', image: 'https://images.unsplash.com/photo-1563201481-2d7448375eeb?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 5, name: 'Rice', dataset_context: 'rice', image: 'https://images.unsplash.com/photo-1536305030588-15dc3f67a3b9?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 6, name: 'Yam', dataset_context: 'yam', image: 'https://images.unsplash.com/photo-1621464759391-77218327299a?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 7, name: 'Cowpea', dataset_context: 'cowpea', image: 'https://images.unsplash.com/photo-1551460417-ee18510227aa?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 8, name: 'Cocoa', dataset_context: 'cocoa', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=400&h=400&auto=format&fit=crop' },
 ];
