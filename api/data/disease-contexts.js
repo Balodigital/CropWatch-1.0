@@ -13,7 +13,7 @@ const TABLE_CONTEXTS = {
 
   'cowpea': "Top common diseases for Cowpea in Nigeria include Cercospora Leaf Spot (red-brown circular spots), Rust (small reddish-brown pustules), and Cowpea Mosaic Virus. Emphasize early planting and field sanitation.",
 
-  'cocoa': "Top common diseases for Cocoa in Nigeria include Black Pod Disease (brown/black rotting pods starting from stalk), Cocoa Swollen Shoot Virus (swelling of stems/roots), and Witches' Broom. Black Pod is extremely common; recommend frequent harvesting and copper-based sprays if local remedies fail."
+  'cocoa': "Top common diseases for Cocoa in Nigeria include Black Pod Disease (brown/black rotting pods starting from stalk), Cocoa Swollen Shoot Virus (swelling of stems/roots), and Witches' Broom. Black Pod is extremely common; recommend frequent harvesting, removing infected pods immediately, and improving air flow in the canopy."
 };
 
 module.exports = TABLE_CONTEXTS;

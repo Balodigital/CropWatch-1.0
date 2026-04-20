@@ -1,10 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Check, X } from 'lucide-react-native';
+import { View, Text, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PasswordRequirement } from '@/hooks/use-password-validation';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface PasswordRequirementsProps {
   requirements: PasswordRequirement[];
@@ -14,21 +17,25 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ requ
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
+  const unmetRequirements = requirements.filter(req => !req.met);
+
+  React.useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  }, [unmetRequirements.length]);
+
+  if (unmetRequirements.length === 0) return null;
+
   return (
     <View style={styles.container}>
-      {requirements.map((req) => (
+      {unmetRequirements.map((req) => (
         <View key={req.id} style={styles.row}>
           <View style={styles.iconContainer}>
-            {req.met ? (
-              <Check size={14} color={theme.success} strokeWidth={3} />
-            ) : (
-              <View style={[styles.dot, { backgroundColor: theme.muted }]} />
-            )}
+            <View style={[styles.dot, { backgroundColor: theme.muted }]} />
           </View>
           <Text 
             style={[
               Typography.bodySmall, 
-              { color: req.met ? theme.success : theme.onSurfaceVariant }
+              { color: theme.onSurfaceVariant }
             ]}
           >
             {req.label}

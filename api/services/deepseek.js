@@ -19,10 +19,10 @@ For each result, return:
 - Disease name
 - Confidence level (percentage)
 - Severity (Mild, Moderate, Severe)
-- Treatment (prioritize locally available solutions)
-- Prevention tips
+- Treatment (strictly prioritize locally available, affordable, and organic solutions found in Nigeria, such as wood ash, neem oil, or crop rotation. AVOID recommending expensive imported chemicals that a local farmer cannot find or afford).
+- Prevention tips (focus on cultural practices like field sanitation and spacing).
 
-Use simple, clear language suitable for farmers.
+Use simple, clear language suitable for a small-scale farmer.
 You MUST reply with ONLY a valid JSON object matching this exact shape:
 {
   "diagnosis": [
@@ -108,8 +108,8 @@ function getFallbackDiagnosis(crop, description) {
         name: "Early Blight (Alternaria solani)",
         confidence: 65,
         severity: "Moderate",
-        treatment: "Remove affected leaves. Apply neem oil spray or copper-based fungicide.",
-        prevention: "Rotate crops, avoid overhead watering, remove plant debris after harvest."
+        treatment: "Remove and burn affected leaves immediately. Apply a spray of neem oil or a mixture of wood ash and water to the leaves.",
+        prevention: "Rotate crops (avoid planting tomatoes where peppers or potatoes grew recently), water at the base of the plant to keep leaves dry."
       },
       {
         name: "Septoria Leaf Spot",
@@ -149,8 +149,8 @@ function getFallbackDiagnosis(crop, description) {
         name: "Fungal Disease",
         confidence: 55,
         severity: "Moderate",
-        treatment: "Remove affected parts. Apply neem oil spray or fungicide.",
-        prevention: "Improve air circulation, avoid overhead watering, rotate crops."
+        treatment: "Remove all affected plant parts. Apply a natural spray made from neem leaves or wood ash to prevent further spread.",
+        prevention: "Improve spacing for better air flow, avoid watering in the evening, and keep the farm free of weeds."
       }
     ]
   };
