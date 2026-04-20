@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { 
-  TouchableOpacity, 
+  Pressable, 
   Text, 
   StyleSheet, 
   ActivityIndicator, 
@@ -9,11 +9,9 @@ import {
   Platform,
   View
 } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { Typography } from '@/constants/Typography';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { tokens } from '@/constants/tokens';
 
-interface ButtonProps {
+export interface ButtonProps {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -25,7 +23,7 @@ interface ButtonProps {
   icon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button: FC<ButtonProps> = ({
   title,
   onPress,
   variant = 'primary',
@@ -36,70 +34,61 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   icon,
 }) => {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
-
   const getBackgroundColor = () => {
-    if (disabled) return theme.surfaceVariant;
+    if (disabled) return tokens.colors.neutral200;
     switch (variant) {
-      case 'primary': return theme.primary;
-      case 'secondary': return theme.secondary;
+      case 'primary': return tokens.colors.primary500;
+      case 'secondary': return tokens.colors.neutral100;
       case 'outline':
       case 'ghost': return 'transparent';
-      default: return theme.primary;
+      default: return tokens.colors.primary500;
     }
   };
 
   const getTextColor = () => {
-    if (disabled) return theme.muted;
+    if (disabled) return tokens.colors.neutral400;
     switch (variant) {
-      case 'primary': return theme.onPrimary;
-      case 'secondary': return theme.onSecondary;
-      case 'outline': return theme.primary;
-      case 'ghost': return theme.primary;
-      default: return theme.onPrimary;
+      case 'primary': return tokens.colors.surface;
+      case 'secondary': return tokens.colors.text;
+      case 'outline': return tokens.colors.primary500;
+      case 'ghost': return tokens.colors.primary500;
+      default: return tokens.colors.surface;
     }
-  };
-
-  const getBorderColor = () => {
-    if (disabled) return theme.outline;
-    if (variant === 'outline') return theme.primary;
-    return 'transparent';
   };
 
   const getHeight = () => {
     switch (size) {
-      case 'small': return 40;
-      case 'medium': return 52;
-      case 'large': return 60;
-      default: return 52;
+      case 'small': return 40; // Material allows 40px for dense UIs
+      case 'medium': return 48; // Material standard touch target
+      case 'large': return 56; // Material prominent touch target
+      default: return 48;
     }
   };
 
   const getPaddingHorizontal = () => {
     switch (size) {
-      case 'small': return 16;
-      case 'medium': return 24;
-      case 'large': return 32;
-      default: return 24;
+      case 'small': return tokens.spacing.md;
+      case 'medium': return tokens.spacing.lg;
+      case 'large': return tokens.spacing.xl;
+      default: return tokens.spacing.lg;
     }
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
-      style={[
+      android_ripple={{ color: tokens.colors.neutral300, borderless: false }}
+      style={({ pressed }) => [
         styles.button,
         {
           backgroundColor: getBackgroundColor(),
-          borderColor: getBorderColor(),
+          borderColor: variant === 'outline' ? (disabled ? tokens.colors.neutral300 : tokens.colors.primary500) : 'transparent',
           borderWidth: variant === 'outline' ? 1.5 : 0,
-          height: getHeight(),
+          minHeight: Math.max(48, getHeight()), // Minimum 48px touch target enforcement
           paddingHorizontal: getPaddingHorizontal(),
-          borderRadius: 12,
-          opacity: disabled ? 0.5 : 1,
+          borderRadius: tokens.radius.lg,
+          opacity: pressed && Platform.OS === 'ios' ? 0.7 : (disabled ? 0.6 : 1),
         },
         style,
       ]}
@@ -111,8 +100,8 @@ export const Button: React.FC<ButtonProps> = ({
           {icon && <View style={styles.iconContainer}>{icon}</View>}
           <Text
             style={[
-              Typography.labelLarge,
-              { color: getTextColor(), fontWeight: '600' },
+              tokens.typography.title,
+              { color: getTextColor(), fontFamily: 'Inter_600SemiBold', fontSize: size === 'small' ? 14 : 16 },
               textStyle,
             ]}
           >
@@ -120,7 +109,7 @@ export const Button: React.FC<ButtonProps> = ({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -128,20 +117,8 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        cursor: 'pointer',
-      }
-    }),
+    overflow: 'hidden', // Ensures ripple doesn't bleed past radius
+    ...tokens.elevation.level1, // Subtle resting elevation
   },
   content: {
     flexDirection: 'row',
@@ -149,6 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconContainer: {
-    marginRight: 8,
+    marginRight: tokens.spacing.sm,
   },
 });

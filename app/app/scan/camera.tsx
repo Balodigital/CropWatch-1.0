@@ -1,32 +1,32 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   Dimensions,
   Alert,
 } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { tokens } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Button } from '@/components/ui/Button';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function CameraScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [permission, requestPermission] = useCameraPermissions();
-  const [facing, setFacing] = useState<CameraType>('back');
+  const [facing] = useState<CameraType>('back');
   const cameraRef = useRef<CameraView>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const takePicture = async () => {
-    if (cameraRef.current) {
+    if (cameraRef.current && !isCapturing) {
+      setIsCapturing(true);
       try {
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
@@ -34,15 +34,15 @@ export default function CameraScreen() {
         });
         if (photo?.base64) {
           const base64Image = `data:image/jpeg;base64,${photo.base64}`;
-          setCapturedImage(base64Image);
           router.push({
             pathname: '/scan/preview',
             params: { image: base64Image },
           });
         }
       } catch (error) {
-        console.error('Error taking picture:', error);
-        Alert.alert('Error', 'Failed to take picture. Please try again.');
+        Alert.alert('Error', 'Failed to capture image. Please try again or use the gallery.');
+      } finally {
+        setIsCapturing(false);
       }
     }
   };
@@ -67,37 +67,36 @@ export default function CameraScreen() {
 
   if (!permission) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>Loading camera...</Text>
+      <View style={[styles.container, { backgroundColor: tokens.colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={[tokens.typography.body, { color: tokens.colors.text }]}>Loading camera system...</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionIcon}>📷</Text>
-          <Text style={[styles.permissionTitle, { color: colors.text }]}>
+          <MaterialIcons name="camera-alt" size={80} color={tokens.colors.primary500} style={{ marginBottom: tokens.spacing.xl }} />
+          <Text style={[tokens.typography.heading, { color: tokens.colors.text, marginBottom: tokens.spacing.sm, textAlign: 'center' }]}>
             Camera Access Required
           </Text>
-          <Text style={[styles.permissionText, { color: colors.textSecondary }]}>
-            We need camera access to scan your crop leaves for diseases.
+          <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary, textAlign: 'center', marginBottom: tokens.spacing.xxl }]}>
+            We need camera access to capture high-quality images of your crop leaves for AI disease diagnosis.
           </Text>
-          <TouchableOpacity
-            style={[styles.permissionButton, { backgroundColor: colors.primary }]}
-            onPress={requestPermission}
-          >
-            <Text style={styles.permissionButtonText}>Grant Permission</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.galleryButton}
-            onPress={pickImage}
-          >
-            <Text style={[styles.galleryButtonText, { color: colors.primary }]}>
-              Choose from Gallery
-            </Text>
-          </TouchableOpacity>
+          <Button 
+            title="Grant Permission" 
+            onPress={requestPermission} 
+            size="large"
+            style={{ width: '100%', marginBottom: tokens.spacing.md }}
+          />
+          <Button 
+            title="Upload from Gallery" 
+            onPress={pickImage} 
+            variant="outline"
+            size="large"
+            style={{ width: '100%' }}
+          />
         </View>
       </SafeAreaView>
     );
@@ -112,12 +111,13 @@ export default function CameraScreen() {
       >
         <SafeAreaView style={styles.overlay}>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.closeButton}
+            <Pressable
+              style={({ pressed }) => [styles.closeButton, { opacity: pressed ? 0.7 : 1 }]}
               onPress={() => router.back()}
+              hitSlop={12}
             >
-              <Text style={styles.closeText}>✕</Text>
-            </TouchableOpacity>
+              <MaterialIcons name="close" size={28} color={tokens.colors.surface} />
+            </Pressable>
           </View>
 
           <View style={styles.frameContainer}>
@@ -128,23 +128,30 @@ export default function CameraScreen() {
               <View style={[styles.corner, styles.bottomRight]} />
             </View>
             <Text style={styles.hintText}>
-              Position the leaf within the frame
+              Center the affected leaf within the frame
             </Text>
           </View>
 
           <View style={styles.controls}>
-            <TouchableOpacity
-              style={styles.galleryButtonLarge}
+            <Pressable
+              style={({ pressed }) => [styles.galleryButtonLarge, { opacity: pressed ? 0.7 : 1 }]}
               onPress={pickImage}
+              hitSlop={16}
             >
-              <Text style={styles.galleryIcon}>🖼️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.captureButton}
+              <MaterialIcons name="photo-library" size={32} color={tokens.colors.surface} />
+            </Pressable>
+            
+            <Pressable
+              style={({ pressed }) => [
+                styles.captureButton, 
+                { opacity: pressed || isCapturing ? 0.6 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }
+              ]}
               onPress={takePicture}
+              disabled={isCapturing}
             >
               <View style={styles.captureButtonInner} />
-            </TouchableOpacity>
+            </Pressable>
+            
             <View style={styles.placeholder} />
           </View>
         </SafeAreaView>
@@ -163,23 +170,20 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'transparent',
+    justifyContent: 'space-between',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    padding: 16,
+    padding: tokens.spacing.lg,
   },
   closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: tokens.radius.full,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  closeText: {
-    color: '#fff',
-    fontSize: 20,
   },
   frameContainer: {
     flex: 1,
@@ -190,59 +194,60 @@ const styles = StyleSheet.create({
     width: width * 0.8,
     height: width * 0.8,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 20,
+    borderColor: 'rgba(255,255,255,0.4)',
+    borderRadius: tokens.radius.xl,
     position: 'relative',
   },
   corner: {
     position: 'absolute',
-    width: 30,
-    height: 30,
-    borderColor: '#fff',
+    width: 32,
+    height: 32,
+    borderColor: tokens.colors.surface,
   },
   topLeft: {
     top: -2,
     left: -2,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    borderTopLeftRadius: 20,
+    borderTopWidth: 5,
+    borderLeftWidth: 5,
+    borderTopLeftRadius: tokens.radius.xl,
   },
   topRight: {
     top: -2,
     right: -2,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    borderTopRightRadius: 20,
+    borderTopWidth: 5,
+    borderRightWidth: 5,
+    borderTopRightRadius: tokens.radius.xl,
   },
   bottomLeft: {
     bottom: -2,
     left: -2,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    borderBottomLeftRadius: 20,
+    borderBottomWidth: 5,
+    borderLeftWidth: 5,
+    borderBottomLeftRadius: tokens.radius.xl,
   },
   bottomRight: {
     bottom: -2,
     right: -2,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderBottomRightRadius: 20,
+    borderBottomWidth: 5,
+    borderRightWidth: 5,
+    borderBottomRightRadius: tokens.radius.xl,
   },
   hintText: {
-    color: '#fff',
-    fontSize: 14,
-    marginTop: 16,
+    color: tokens.colors.surface,
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: tokens.spacing.xl,
     textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   controls: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingBottom: tokens.spacing.xxl,
+    paddingHorizontal: tokens.spacing.lg,
   },
   captureButton: {
     width: 80,
@@ -252,67 +257,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#fff',
+    borderColor: tokens.colors.surface,
   },
   captureButtonInner: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#fff',
+    backgroundColor: tokens.colors.surface,
   },
   galleryButtonLarge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  galleryIcon: {
-    fontSize: 24,
-  },
   placeholder: {
-    width: 50,
-    height: 50,
+    width: 56,
+    height: 56,
   },
   permissionContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-  },
-  permissionIcon: {
-    fontSize: 64,
-    marginBottom: 24,
-  },
-  permissionTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  permissionText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  permissionButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  permissionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  galleryButton: {
-    padding: 12,
-  },
-  galleryButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    padding: tokens.spacing.xxl,
   },
 });

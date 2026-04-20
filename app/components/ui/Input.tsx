@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, FC } from 'react';
 import { 
   View, 
   TextInput, 
   Text, 
   StyleSheet, 
-  TouchableOpacity, 
+  Pressable, 
   TextInputProps,
   ViewStyle
 } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { Typography } from '@/constants/Typography';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { tokens } from '@/constants/tokens';
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-react-native';
 
-interface InputProps extends TextInputProps {
+export interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   success?: boolean;
@@ -21,7 +19,7 @@ interface InputProps extends TextInputProps {
   containerStyle?: ViewStyle;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input: FC<InputProps> = ({
   label,
   error,
   success,
@@ -29,22 +27,20 @@ export const Input: React.FC<InputProps> = ({
   containerStyle,
   ...props
 }) => {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const getBorderColor = () => {
-    if (error) return theme.error;
-    if (success) return theme.success;
-    if (isFocused) return theme.primary;
-    return theme.outline;
+    if (error) return tokens.colors.error500;
+    if (success) return tokens.colors.success500;
+    if (isFocused) return tokens.colors.primary500;
+    return tokens.colors.border;
   };
 
   return (
     <View style={[styles.container, containerStyle]}>
       {label && (
-        <Text style={[Typography.labelMedium, { color: theme.onSurfaceVariant, marginBottom: 8 }]}>
+        <Text style={[tokens.typography.title, { color: tokens.colors.textSecondary, marginBottom: tokens.spacing.sm, fontSize: 14 }]}>
           {label}
         </Text>
       )}
@@ -52,19 +48,19 @@ export const Input: React.FC<InputProps> = ({
         style={[
           styles.inputContainer, 
           { 
-            backgroundColor: theme.surface,
+            backgroundColor: tokens.colors.surface,
             borderColor: getBorderColor(),
-            borderWidth: isFocused || error || success ? 1.5 : 1,
+            borderWidth: isFocused || error || success ? 2 : 1,
           }
         ]}
       >
         <TextInput
           style={[
             styles.input, 
-            Typography.bodyLarge, 
-            { color: theme.onSurface }
+            tokens.typography.body, 
+            { color: tokens.colors.text }
           ]}
-          placeholderTextColor={theme.muted}
+          placeholderTextColor={tokens.colors.neutral400}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword && !showPassword}
@@ -73,25 +69,26 @@ export const Input: React.FC<InputProps> = ({
         <View style={styles.rightIcons}>
           {success && !isPassword && (
             <View style={styles.iconContainer}>
-              <CheckCircle2 size={20} color={theme.success} />
+              <CheckCircle2 size={20} color={tokens.colors.success500} />
             </View>
           )}
           {isPassword && (
-            <TouchableOpacity 
+            <Pressable 
               onPress={() => setShowPassword(!showPassword)}
-              style={styles.iconContainer}
+              hitSlop={12} // Extends touch target to meet Material 48px standard
+              style={({ pressed }) => [styles.iconContainer, { opacity: pressed ? 0.7 : 1 }]}
             >
               {showPassword ? (
-                <EyeOff size={20} color={theme.onSurfaceVariant} />
+                <EyeOff size={20} color={tokens.colors.neutral500} />
               ) : (
-                <Eye size={20} color={theme.onSurfaceVariant} />
+                <Eye size={20} color={tokens.colors.neutral500} />
               )}
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </View>
       {error && (
-        <Text style={[Typography.bodySmall, { color: theme.error, marginTop: 4 }]}>
+        <Text style={[tokens.typography.caption, { color: tokens.colors.error500, marginTop: tokens.spacing.xs }]}>
           {error}
         </Text>
       )}
@@ -102,24 +99,28 @@ export const Input: React.FC<InputProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 16,
+    marginBottom: tokens.spacing.md,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 52,
+    borderRadius: tokens.radius.lg,
+    paddingHorizontal: tokens.spacing.md,
+    minHeight: 56, // Material 3 standard min height for inputs
   },
   input: {
     flex: 1,
     height: '100%',
+    paddingVertical: tokens.spacing.sm,
   },
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginLeft: tokens.spacing.sm,
   },
   iconContainer: {
-    padding: 8,
+    padding: tokens.spacing.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
