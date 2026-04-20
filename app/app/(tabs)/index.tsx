@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { tokens } from '@/constants/tokens';
 import { OfflineStorage } from '@/lib/offline';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -28,87 +28,91 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.container}
       contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
     >
       <View style={styles.heroSection}>
-        <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
-          <Text style={styles.heroEmoji}>🌱</Text>
-          <Text style={styles.heroTitle}>{t('welcome')}</Text>
-          <Text style={styles.heroSubtitle}>
-            Identify crop diseases early and protect your harvest
+        <Card style={[styles.heroCard, { backgroundColor: tokens.colors.primary500 }]} elevation="level2">
+          <MaterialIcons name="eco" size={48} color={tokens.colors.surface} style={{ marginBottom: tokens.spacing.sm }} />
+          <Text style={[tokens.typography.heading, { color: tokens.colors.surface, textAlign: 'center', marginBottom: tokens.spacing.xs }]}>
+            {t('welcome')}
           </Text>
-          <TouchableOpacity
-            style={[styles.scanButton, { backgroundColor: '#fff' }]}
+          <Text style={[tokens.typography.body, { color: tokens.colors.primary100, textAlign: 'center', marginBottom: tokens.spacing.lg }]}>
+            Identify crop diseases early and protect your harvest.
+          </Text>
+          <Button 
+            title={t('scan_leaf')} 
             onPress={handleStartScan}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.scanButtonText}>{t('scan_leaf')}</Text>
-          </TouchableOpacity>
-        </View>
+            variant="secondary"
+            size="large"
+            icon={<MaterialIcons name="camera-alt" size={24} color={tokens.colors.primary500} />}
+            style={{ width: '100%' }}
+          />
+        </Card>
       </View>
 
       {pendingCount > 0 && (
-        <View style={[styles.pendingCard, { backgroundColor: colors.warning + '20' }]}>
-          <Text style={styles.pendingIcon}>📡</Text>
+        <Card style={[styles.pendingCard, { backgroundColor: tokens.colors.warning500 + '15' }]} elevation="level1">
+          <MaterialIcons name="sync-problem" size={32} color={tokens.colors.warning500} style={{ marginRight: tokens.spacing.md }} />
           <View style={styles.pendingContent}>
-            <Text style={[styles.pendingTitle, { color: colors.text }]}>
+            <Text style={[tokens.typography.title, { color: tokens.colors.warning500 }]}>
               {pendingCount} pending scan{pendingCount > 1 ? 's' : ''}
             </Text>
-            <Text style={[styles.pendingText, { color: colors.textSecondary }]}>
-              Will sync when you're back online
+            <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary }]}>
+              Will sync automatically when back online.
             </Text>
           </View>
-        </View>
+        </Card>
       )}
 
       <View style={styles.quickActions}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Actions</Text>
+        <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
+          Quick Actions
+        </Text>
         <View style={styles.actionsGrid}>
           <QuickActionCard
-            icon="📸"
+            icon="camera-alt"
             title="Scan Leaf"
             description="Take a photo"
             onPress={handleStartScan}
-            colors={colors}
           />
           <QuickActionCard
-            icon="📚"
+            icon="library-books"
             title="Crop Library"
             description="Learn about crops"
             onPress={() => router.push('/library')}
-            colors={colors}
           />
           <QuickActionCard
-            icon="📋"
+            icon="history"
             title="History"
             description="Past diagnoses"
             onPress={() => router.push('/history')}
-            colors={colors}
           />
           <QuickActionCard
-            icon="💡"
+            icon="lightbulb"
             title="Tips"
             description="Farming advice"
             onPress={() => {}}
-            colors={colors}
           />
         </View>
       </View>
 
       <View style={styles.tipsSection}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('prevention')}</Text>
-        <View style={[styles.tipCard, { backgroundColor: colors.surface }]}>
-          <Text style={styles.tipIcon}>🌿</Text>
+        <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
+          {t('prevention')}
+        </Text>
+        <Card style={styles.tipCard} elevation="level1">
+          <MaterialIcons name="healing" size={32} color={tokens.colors.success500} style={{ marginRight: tokens.spacing.md }} />
           <View style={styles.tipContent}>
-            <Text style={[styles.tipTitle, { color: colors.text }]}>
+            <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.xs }]}>
               Early Detection Matters
             </Text>
-            <Text style={[styles.tipText, { color: colors.textSecondary }]}>
-              Regular leaf scanning can prevent up to 80% of crop losses
+            <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary }]}>
+              Regular leaf scanning can prevent up to 80% of crop losses in the early stages of disease.
             </Text>
           </View>
-        </View>
+        </Card>
       </View>
     </ScrollView>
   );
@@ -119,155 +123,98 @@ function QuickActionCard({
   title,
   description,
   onPress,
-  colors
 }: {
-  icon: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
   title: string;
   description: string;
   onPress: () => void;
-  colors: typeof Colors.light;
 }) {
   return (
-    <TouchableOpacity
-      style={[styles.actionCard, { backgroundColor: colors.surface }]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.actionIcon}>{icon}</Text>
-      <Text style={[styles.actionTitle, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.actionDesc, { color: colors.textSecondary }]}>{description}</Text>
-    </TouchableOpacity>
+    <View style={styles.actionCardWrapper}>
+      <Card style={styles.actionCardInner} elevation="level1">
+        <Pressable
+          style={({ pressed }) => [styles.actionPressable, { opacity: pressed ? 0.7 : 1 }]}
+          onPress={onPress}
+          android_ripple={{ color: tokens.colors.neutral200 }}
+        >
+          <View style={[styles.iconContainer, { backgroundColor: tokens.colors.primary50 }]}>
+            <MaterialIcons name={icon} size={28} color={tokens.colors.primary500} />
+          </View>
+          <Text style={[tokens.typography.title, { color: tokens.colors.text, fontSize: 16, marginBottom: tokens.spacing.xs }]}>
+            {title}
+          </Text>
+          <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary }]}>
+            {description}
+          </Text>
+        </Pressable>
+      </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxl,
   },
   heroSection: {
-    marginBottom: 20,
+    marginBottom: tokens.spacing.lg,
   },
   heroCard: {
-    borderRadius: 20,
-    padding: 24,
     alignItems: 'center',
-  },
-  heroEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  scanButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 30,
-  },
-  scanButtonText: {
-    color: '#2c6a4f',
-    fontSize: 18,
-    fontWeight: '600',
+    paddingVertical: tokens.spacing.xl,
   },
   pendingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  pendingIcon: {
-    fontSize: 28,
-    marginRight: 12,
+    marginBottom: tokens.spacing.lg,
+    borderWidth: 1,
+    borderColor: tokens.colors.warning500 + '30',
   },
   pendingContent: {
     flex: 1,
   },
-  pendingTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  pendingText: {
-    fontSize: 14,
-  },
   quickActions: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.xl,
   },
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: tokens.spacing.md,
+    justifyContent: 'space-between',
   },
-  actionCard: {
-    width: '47%',
-    padding: 16,
-    borderRadius: 12,
+  actionCardWrapper: {
+    width: '48%',
+  },
+  actionCardInner: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  actionPressable: {
+    padding: tokens.spacing.md,
+    minHeight: 120,
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: tokens.radius.full,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  actionIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  actionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  actionDesc: {
-    fontSize: 12,
+    justifyContent: 'center',
+    marginBottom: tokens.spacing.sm,
   },
   tipsSection: {
-    marginBottom: 20,
+    marginBottom: tokens.spacing.lg,
   },
   tipCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  tipIcon: {
-    fontSize: 32,
-    marginRight: 12,
+    alignItems: 'flex-start',
   },
   tipContent: {
     flex: 1,
-  },
-  tipTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  tipText: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });

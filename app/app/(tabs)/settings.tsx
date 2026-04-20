@@ -3,327 +3,256 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
-  Switch,
   Alert,
+  Linking,
+  Pressable,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { OfflineStorage } from '@/lib/offline';
+import { tokens } from '@/constants/tokens';
+import { useAuth } from '@/context/AuthContext';
+import { SettingsItem } from '@/components/profile/SettingsItem';
+import { SettingsSection } from '@/components/profile/SettingsSection';
+import { ToggleItem } from '@/components/profile/ToggleItem';
+import { Avatar } from '@/components/profile/Avatar';
+import { MaterialIcons } from '@expo/vector-icons';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { t, i18n } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { user, profile, signOut, signOutAllDevices, deactivateAccount } = useAuth();
+  
+  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
-  const [offlineMode, setOfflineMode] = useState(true);
+  const [biometricLock, setBiometricLock] = useState(false);
+  
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [signOutAllModalVisible, setSignOutAllModalVisible] = useState(false);
 
   const currentLanguage = i18n.language;
 
-  const handleLanguageChange = () => {
-    const newLang = currentLanguage === 'en' ? 'pcm' : 'en';
-    Alert.alert(
-      'Change Language',
-      `Switch to ${newLang === 'en' ? 'English' : 'Nigerian Pidgin'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Switch',
-          onPress: async () => {
-            await i18n.changeLanguage(newLang);
-            await OfflineStorage.saveUserPreferences({
-              language: newLang,
-              hasCompletedOnboarding: true,
-            });
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    setLogoutModalVisible(false);
+    await signOut();
+    router.replace('/(auth)/login');
   };
 
-  const handleClearHistory = () => {
-    Alert.alert(
-      'Clear History',
-      'This will delete all your scan history and cached diagnoses. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: async () => {
-            await OfflineStorage.clearAll();
-            Alert.alert('Success', 'History cleared successfully');
-          },
-        },
-      ]
-    );
-  };
-
-  const handleExportData = () => {
-    Alert.alert(
-      'Export Data',
-      'Export your scan history as a PDF report?',
-      [{ text: 'OK' }]
-    );
+  const handleSignOutAll = async () => {
+    setSignOutAllModalVisible(false);
+    await signOutAllDevices();
+    router.replace('/(auth)/login');
   };
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.container}
       contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
     >
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          Account
-        </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <SettingItem
-            icon="🌐"
-            title="Language"
-            value={currentLanguage === 'en' ? 'English' : 'Nigerian Pidgin'}
-            onPress={handleLanguageChange}
-            colors={colors}
-          />
-          <SettingItem
-            icon="🔔"
-            title="Notifications"
-            hasSwitch
-            switchValue={notifications}
-            onSwitchChange={setNotifications}
-            colors={colors}
-          />
-        </View>
+      {/* Profile Header Section */}
+      <View style={styles.profileHeaderCard}>
+        <SettingsSection>
+          <Pressable 
+            onPress={() => router.push('/profile/edit')}
+            style={({ pressed }) => [styles.profileRow, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Avatar 
+              uri={profile?.avatar_url || user?.user_metadata?.avatar_url} 
+              size={60} 
+            />
+            <View style={styles.profileInfo}>
+              <Text style={[tokens.typography.title, styles.profileName]}>
+                {profile?.full_name || user?.user_metadata?.full_name || 'CropWatch User'}
+              </Text>
+              <Text style={[tokens.typography.caption, styles.profileEmail]}>
+                {user?.email}
+              </Text>
+            </View>
+            <View style={styles.editIconContainer}>
+              <MaterialIcons name="edit" size={20} color={tokens.colors.primary500} />
+            </View>
+          </Pressable>
+        </SettingsSection>
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          Data & Storage
-        </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <SettingItem
-            icon="📴"
-            title="Offline Mode"
-            subtitle="Store scans for later processing"
-            hasSwitch
-            switchValue={offlineMode}
-            onSwitchChange={setOfflineMode}
-            colors={colors}
-          />
-          <SettingItem
-            icon="📤"
-            title="Export Data"
-            subtitle="Download your scan history"
-            onPress={handleExportData}
-            colors={colors}
-          />
-          <SettingItem
-            icon="🗑️"
-            title="Clear History"
-            subtitle="Delete all scan records"
-            onPress={handleClearHistory}
-            colors={colors}
-            destructive
-          />
-        </View>
-      </View>
+      {/* Appearance & Notifications */}
+      <SettingsSection title="Preferences">
+        <ToggleItem
+          icon="dark-mode"
+          title="Dark Mode"
+          value={darkMode}
+          onValueChange={setDarkMode}
+        />
+        <ToggleItem
+          icon="notifications-none"
+          title="Notifications"
+          value={notifications}
+          onValueChange={setNotifications}
+        />
+      </SettingsSection>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          Support
-        </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <SettingItem
-            icon="❓"
-            title="Help Center"
-            onPress={() => {}}
-            colors={colors}
-          />
-          <SettingItem
-            icon="📧"
-            title="Contact Us"
-            onPress={() => {}}
-            colors={colors}
-          />
-          <SettingItem
-            icon="⭐"
-            title="Rate App"
-            onPress={() => {}}
-            colors={colors}
-          />
-        </View>
-      </View>
+      {/* Security Options */}
+      <SettingsSection title="Security Options">
+        <ToggleItem
+          icon="fingerprint"
+          title="Biometric Lock"
+          subtitle="Fingerprint or Face Unlock"
+          value={biometricLock}
+          onValueChange={setBiometricLock}
+        />
+        <SettingsItem
+          icon="lock-outline"
+          title="Change Password"
+          onPress={() => router.push('/profile/change-password')}
+        />
+      </SettingsSection>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          About
-        </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <SettingItem
-            icon="📜"
-            title="Terms of Service"
-            onPress={() => {}}
-            colors={colors}
-          />
-          <SettingItem
-            icon="🔒"
-            title="Privacy Policy"
-            onPress={() => {}}
-            colors={colors}
-          />
-          <SettingItem
-            icon="ℹ️"
-            title="Version"
-            value="1.0.0"
-            colors={colors}
-          />
-        </View>
-      </View>
+      {/* Privacy Settings */}
+      <SettingsSection title="Privacy Settings">
+        <SettingsItem
+          icon="security"
+          title="App Permissions"
+          subtitle="Manage camera, storage, etc."
+          onPress={() => router.push('/profile/permissions')}
+        />
+      </SettingsSection>
+
+      {/* Regional Section */}
+      <SettingsSection title="Regional">
+        <SettingsItem
+          icon="language"
+          title="Language"
+          value={currentLanguage === 'en' ? 'English' : 'Pidgin'}
+          onPress={() => router.push('/profile/language')}
+        />
+      </SettingsSection>
+
+      {/* Help & Support */}
+      <SettingsSection title="Help & Support">
+        <SettingsItem
+          icon="help-outline"
+          title="FAQ"
+          onPress={() => Linking.openURL('https://cropwatch.app/faq')}
+        />
+        <SettingsItem
+          icon="headset-mic"
+          title="Contact Support"
+          onPress={() => Linking.openURL('mailto:support@cropwatch.app')}
+        />
+        <SettingsItem
+          icon="description"
+          title="Terms & Privacy Policy"
+          onPress={() => Linking.openURL('https://cropwatch.app/privacy')}
+        />
+      </SettingsSection>
+
+      {/* Account Control */}
+      <SettingsSection title="Account Control">
+        <SettingsItem
+          icon="devices"
+          title="Sign out of all devices"
+          onPress={() => setSignOutAllModalVisible(true)}
+        />
+      </SettingsSection>
+
+      {/* Logout Section */}
+      <SettingsSection>
+        <SettingsItem
+          icon="logout"
+          title="Logout"
+          onPress={() => setLogoutModalVisible(true)}
+          destructive
+          showChevron={false}
+        />
+      </SettingsSection>
 
       <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+        <Text style={styles.versionText}>App ver 2.0.1</Text>
+        <Pressable onPress={() => Alert.alert('Update', 'You are using the latest version.')}>
+          <Text style={[styles.footerText, { color: tokens.colors.primary500 }]}>Check for updates</Text>
+        </Pressable>
+        <Text style={styles.footerText}>
           Made with 💚 for Nigerian Farmers
         </Text>
-        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-          © 2024 CropWatch
-        </Text>
       </View>
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        visible={logoutModalVisible}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Logout"
+        onConfirm={handleLogout}
+        onClose={() => setLogoutModalVisible(false)}
+        isDestructive
+      />
+
+      <ConfirmationModal
+        visible={signOutAllModalVisible}
+        title="Sign Out Everywhere"
+        message="This will log you out of all devices currently using this account."
+        confirmLabel="Sign Out All"
+        onConfirm={handleSignOutAll}
+        onClose={() => setSignOutAllModalVisible(false)}
+      />
     </ScrollView>
   );
-}
-
-function SettingItem({
-  icon,
-  title,
-  subtitle,
-  value,
-  hasSwitch,
-  switchValue,
-  onSwitchChange,
-  onPress,
-  colors,
-  destructive,
-}: {
-  icon: string;
-  title: string;
-  subtitle?: string;
-  value?: string;
-  hasSwitch?: boolean;
-  switchValue?: boolean;
-  onSwitchChange?: (value: boolean) => void;
-  onPress?: () => void;
-  colors: typeof Colors.light;
-  destructive?: boolean;
-}) {
-  const content = (
-    <View style={styles.settingItem}>
-      <Text style={styles.settingIcon}>{icon}</Text>
-      <View style={styles.settingContent}>
-        <Text
-          style={[
-            styles.settingTitle,
-            { color: destructive ? colors.error : colors.text },
-          ]}
-        >
-          {title}
-        </Text>
-        {subtitle && (
-          <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
-            {subtitle}
-          </Text>
-        )}
-      </View>
-      {hasSwitch && onSwitchChange && (
-        <Switch
-          value={switchValue}
-          onValueChange={onSwitchChange}
-          trackColor={{ false: '#ddd', true: colors.primaryLight }}
-          thumbColor={switchValue ? colors.primary : '#f4f4f4'}
-        />
-      )}
-      {value && (
-        <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
-          {value}
-        </Text>
-      )}
-      {!hasSwitch && !value && <Text style={styles.chevron}>›</Text>}
-    </View>
-  );
-
-  if (onPress) {
-    return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-        {content}
-      </TouchableOpacity>
-    );
-  }
-
-  return content;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxl,
   },
-  section: {
-    marginBottom: 24,
+  profileHeaderCard: {
+    marginTop: tokens.spacing.sm,
   },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  card: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  settingItem: {
+  profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    padding: tokens.spacing.lg,
+    backgroundColor: tokens.colors.surface,
   },
-  settingIcon: {
-    fontSize: 24,
-    marginRight: 16,
-  },
-  settingContent: {
+  profileInfo: {
     flex: 1,
+    marginLeft: tokens.spacing.md,
   },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: '500',
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: tokens.colors.text,
   },
-  settingSubtitle: {
-    fontSize: 13,
+  profileEmail: {
+    color: tokens.colors.textSecondary,
     marginTop: 2,
   },
-  settingValue: {
-    fontSize: 14,
-  },
-  chevron: {
-    fontSize: 20,
-    color: '#ccc',
+  editIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: tokens.colors.primary50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   footer: {
+    marginTop: tokens.spacing.xl,
     alignItems: 'center',
-    paddingVertical: 24,
+    gap: 6,
+  },
+  versionText: {
+    ...tokens.typography.caption,
+    color: tokens.colors.textSecondary,
+    fontSize: 12,
   },
   footerText: {
-    fontSize: 12,
-    marginBottom: 4,
+    ...tokens.typography.caption,
+    color: tokens.colors.neutral400,
+    fontSize: 11,
   },
 });

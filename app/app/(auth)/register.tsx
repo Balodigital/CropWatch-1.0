@@ -27,7 +27,6 @@ export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   
@@ -38,8 +37,7 @@ export default function RegisterScreen() {
   const { requirements, strength, isValid: passwordValid } = usePasswordValidation(password);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const passwordsMatch = password === confirmPassword && password !== '';
-  const formValid = fullName.trim().length > 0 && emailValid && passwordValid && passwordsMatch;
+  const formValid = fullName.trim().length > 0 && emailValid && passwordValid;
 
   const handleSignUp = async () => {
     if (!formValid) return;
@@ -111,16 +109,6 @@ export default function RegisterScreen() {
             
             <StrengthMeter strength={strength} />
             <PasswordRequirements requirements={requirements} />
-
-            <Input
-              label="Confirm Password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              isPassword
-              error={confirmPassword && !passwordsMatch ? "Passwords do not match" : ""}
-              success={passwordsMatch}
-            />
 
             <Button
               title="Create Account"
