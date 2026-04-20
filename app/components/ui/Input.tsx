@@ -10,13 +10,16 @@ import {
 } from 'react-native';
 import { tokens } from '@/constants/tokens';
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   success?: boolean;
   isPassword?: boolean;
+  icon?: keyof typeof MaterialIcons.glyphMap;
   containerStyle?: ViewStyle;
+  helperText?: string;
 }
 
 export const Input: FC<InputProps> = ({
@@ -24,7 +27,9 @@ export const Input: FC<InputProps> = ({
   error,
   success,
   isPassword = false,
+  icon,
   containerStyle,
+  helperText,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -54,6 +59,11 @@ export const Input: FC<InputProps> = ({
           }
         ]}
       >
+        {icon && (
+          <View style={styles.leftIcon}>
+            <MaterialIcons name={icon} size={20} color={isFocused ? tokens.colors.primary500 : tokens.colors.neutral400} />
+          </View>
+        )}
         <TextInput
           style={[
             styles.input, 
@@ -63,7 +73,7 @@ export const Input: FC<InputProps> = ({
           placeholderTextColor={tokens.colors.neutral400}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          secureTextEntry={isPassword && !showPassword}
+          secureTextEntry={(isPassword || props.secureTextEntry) && !showPassword}
           {...props}
         />
         <View style={styles.rightIcons}>
@@ -75,7 +85,7 @@ export const Input: FC<InputProps> = ({
           {isPassword && (
             <Pressable 
               onPress={() => setShowPassword(!showPassword)}
-              hitSlop={12} // Extends touch target to meet Material 48px standard
+              hitSlop={12}
               style={({ pressed }) => [styles.iconContainer, { opacity: pressed ? 0.7 : 1 }]}
             >
               {showPassword ? (
@@ -87,9 +97,9 @@ export const Input: FC<InputProps> = ({
           )}
         </View>
       </View>
-      {error && (
-        <Text style={[tokens.typography.caption, { color: tokens.colors.error500, marginTop: tokens.spacing.xs }]}>
-          {error}
+      {(error || helperText) && (
+        <Text style={[tokens.typography.caption, { color: error ? tokens.colors.error500 : tokens.colors.textSecondary, marginTop: tokens.spacing.xs }]}>
+          {error || helperText}
         </Text>
       )}
     </View>
@@ -106,7 +116,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: tokens.radius.lg,
     paddingHorizontal: tokens.spacing.md,
-    minHeight: 56, // Material 3 standard min height for inputs
+    minHeight: 56,
+  },
+  leftIcon: {
+    marginRight: tokens.spacing.sm,
   },
   input: {
     flex: 1,

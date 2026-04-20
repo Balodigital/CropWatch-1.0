@@ -8,9 +8,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. Profiles Table (Extends Supabase Auth Auth.users)
 CREATE TABLE public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  avatar_url TEXT,
   phone_number TEXT UNIQUE,
-  language_pref VARCHAR(10) DEFAULT 'pcm',
+  language_pref VARCHAR(10) DEFAULT 'en', -- 'en' or 'pcm'
   created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (id)
 );
 

@@ -7,6 +7,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface Profile {
   id: string;
+  full_name?: string;
+  avatar_url?: string;
   phone_number?: string;
   language_pref: 'en' | 'pcm';
   created_at: string;

@@ -74,6 +74,7 @@ function RootLayoutNav() {
       <Stack screenOptions={{ headerShown: false }}>
         {/* Protected Group */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
         
         {/* Onboarding Flow */}
         <Stack.Screen name="splash" options={{ animation: 'fade' }} />
