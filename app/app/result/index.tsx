@@ -97,7 +97,11 @@ export default function ResultScreen() {
               <View
                 style={[
                   styles.primaryResult,
-                  { backgroundColor: tokens.colors.error80 },
+                  { 
+                    backgroundColor: diagnoses[0]?.severity?.toLowerCase() === 'severe' 
+                      ? tokens.colors.error98 
+                      : tokens.colors.neutral98 
+                  },
                 ]}
               >
                 <Text style={[styles.mostLikely, { color: tokens.colors.error30 }]}>

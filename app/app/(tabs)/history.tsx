@@ -96,10 +96,20 @@ export default function HistoryScreen() {
   const renderItem = ({ item }: { item: HistoryItem }) => {
     const topDiagnosis = item.diagnosis[0];
     const severityColor = getSeverityColor(topDiagnosis?.severity);
+    
+    const getCardBackground = (severity?: string) => {
+      const s = severity?.toLowerCase();
+      if (s === 'severe') {
+        return tokens.colors.error98;
+      }
+      return tokens.colors.neutral98;
+    };
+
+    const cardBg = getCardBackground(topDiagnosis?.severity);
 
     return (
       <TouchableOpacity
-        style={[styles.historyCard, { backgroundColor: colors.surface }]}
+        style={[styles.historyCard, { backgroundColor: cardBg }]}
         onPress={() => {
           if (item.status === 'completed' && item.diagnosis.length > 0) {
             router.push({
