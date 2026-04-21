@@ -1,10 +1,9 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
 import { Diagnosis } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function TreatmentScreen() {
   const router = useRouter();
@@ -14,8 +13,6 @@ export default function TreatmentScreen() {
     cropType: string;
   }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   const diagnoses: Diagnosis[] = diagnosis ? JSON.parse(diagnosis) : [];
   const currentIndex = parseInt(index || '0', 10);
@@ -24,22 +21,16 @@ export default function TreatmentScreen() {
   const treatments = parseTreatments(currentDiagnosis?.treatment || '');
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={[styles.backButton, { color: colors.text }]}>Back</Text>
-        </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Treatment</Text>
-        <View style={{ width: 60 }} />
-      </View>
+    <View style={styles.container}>
+      <AppHeader title="Treatment" />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.diagnosisCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.diseaseName, { color: colors.text }]}>
+        <View style={[styles.diagnosisCard, { backgroundColor: tokens.colors.surface }]}>
+          <Text style={[styles.diseaseName, { color: tokens.colors.text }]}>
             {currentDiagnosis?.name}
           </Text>
           <View
@@ -48,10 +39,10 @@ export default function TreatmentScreen() {
               {
                 backgroundColor:
                   currentDiagnosis?.severity === 'Severe'
-                    ? colors.error
+                    ? tokens.colors.error500
                     : currentDiagnosis?.severity === 'Moderate'
-                    ? colors.warning
-                    : colors.success,
+                    ? tokens.colors.warning500
+                    : tokens.colors.success500,
               },
             ]}
           >
@@ -59,13 +50,13 @@ export default function TreatmentScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
           Recommended Treatments
         </Text>
 
         <View style={styles.priorityNote}>
           <Text style={styles.priorityIcon}>💡</Text>
-          <Text style={[styles.priorityText, { color: colors.textSecondary }]}>
+          <Text style={[styles.priorityText, { color: tokens.colors.textSecondary }]}>
             We prioritize locally available, affordable solutions before
             commercial chemicals
           </Text>
@@ -74,29 +65,29 @@ export default function TreatmentScreen() {
         {treatments.map((treatment, idx) => (
           <View
             key={idx}
-            style={[styles.treatmentCard, { backgroundColor: colors.surface }]}
+            style={[styles.treatmentCard, { backgroundColor: tokens.colors.surface }]}
           >
             <View style={styles.treatmentHeader}>
               <Text style={styles.treatmentNumber}>{idx + 1}</Text>
               <View style={styles.treatmentInfo}>
-                <Text style={[styles.treatmentTitle, { color: colors.text }]}>
+                <Text style={[styles.treatmentTitle, { color: tokens.colors.text }]}>
                   {treatment.name}
                 </Text>
-                <Text style={[styles.treatmentType, { color: colors.primary }]}>
+                <Text style={[styles.treatmentType, { color: tokens.colors.primary500 }]}>
                   {treatment.type}
                 </Text>
               </View>
             </View>
-            <Text style={[styles.treatmentDesc, { color: colors.textSecondary }]}>
+            <Text style={[styles.treatmentDesc, { color: tokens.colors.textSecondary }]}>
               {treatment.description}
             </Text>
             {treatment.application && (
               <View style={styles.applicationContainer}>
-                <Text style={[styles.applicationLabel, { color: colors.text }]}>
+                <Text style={[styles.applicationLabel, { color: tokens.colors.text }]}>
                   How to apply:
                 </Text>
                 <Text
-                  style={[styles.applicationText, { color: colors.textSecondary }]}
+                  style={[styles.applicationText, { color: tokens.colors.textSecondary }]}
                 >
                   {treatment.application}
                 </Text>
@@ -105,13 +96,13 @@ export default function TreatmentScreen() {
           </View>
         ))}
 
-        <View style={[styles.warningCard, { backgroundColor: colors.warning + '15' }]}>
+        <View style={[styles.warningCard, { backgroundColor: tokens.colors.warning50 }]}>
           <Text style={styles.warningIcon}>⚠️</Text>
           <View style={styles.warningContent}>
-            <Text style={[styles.warningTitle, { color: colors.text }]}>
+            <Text style={[styles.warningTitle, { color: tokens.colors.text }]}>
               Important
             </Text>
-            <Text style={[styles.warningText, { color: colors.textSecondary }]}>
+            <Text style={[styles.warningText, { color: tokens.colors.textSecondary }]}>
               Always test on a small area first. If symptoms persist or worsen,
               consult an agricultural extension officer.
             </Text>
@@ -121,13 +112,13 @@ export default function TreatmentScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.doneButton, { backgroundColor: colors.primary }]}
+          style={[styles.doneButton, { backgroundColor: tokens.colors.primary500 }]}
           onPress={() => router.replace('/(tabs)')}
         >
           <Text style={styles.doneButtonText}>Done</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -179,34 +170,23 @@ function parseTreatments(treatmentText: string): Treatment[] {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
+    backgroundColor: tokens.colors.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   diagnosisCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.xl,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    ...tokens.elevation.level1,
   },
   diseaseName: {
     fontSize: 18,
@@ -214,9 +194,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   severityBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: tokens.spacing.md,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: tokens.radius.full,
   },
   severityText: {
     color: '#fff',
@@ -226,19 +206,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.md,
   },
   priorityNote: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    padding: 12,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 8,
-    marginBottom: 16,
+    padding: tokens.spacing.md,
+    backgroundColor: tokens.colors.primary50,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
   },
   priorityIcon: {
     fontSize: 16,
-    marginRight: 8,
+    marginRight: tokens.spacing.xs,
   },
   priorityText: {
     flex: 1,
@@ -246,30 +226,26 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   treatmentCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
+    ...tokens.elevation.level1,
   },
   treatmentHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   treatmentNumber: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#2c6a4f',
+    backgroundColor: tokens.colors.primary600,
     color: '#fff',
     textAlign: 'center',
     lineHeight: 28,
     fontWeight: '600',
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   treatmentInfo: {
     flex: 1,
@@ -286,12 +262,12 @@ const styles = StyleSheet.create({
   treatmentDesc: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   applicationContainer: {
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: tokens.colors.neutral100,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.sm,
   },
   applicationLabel: {
     fontSize: 13,
@@ -304,13 +280,13 @@ const styles = StyleSheet.create({
   },
   warningCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginTop: tokens.spacing.sm,
   },
   warningIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   warningContent: {
     flex: 1,
@@ -325,11 +301,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   footer: {
-    padding: 16,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   doneButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   doneButtonText: {

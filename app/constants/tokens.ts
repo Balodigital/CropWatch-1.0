@@ -29,6 +29,9 @@ export const tokens = {
     // Semantics
     error500: '#aa2222',
     error100: '#fce8e8',
+    error80: '#eeaaaa',
+    error20: '#551111',
+    error30: '#801919',
     success500: '#3e8e41',
     success100: '#e9f5ea',
     warning500: '#cc9900',

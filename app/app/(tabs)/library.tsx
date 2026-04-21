@@ -2,26 +2,13 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { CROPS_DATA } from '@/lib/supabase';
-
-const CROP_IMAGES: Record<string, any> = {
-  tomato: require('@/assets/images/crops/tomato.png'),
-  cassava: require('@/assets/images/crops/cassava.png'),
-  maize: require('@/assets/images/crops/maize.png'),
-  pepper: require('@/assets/images/crops/pepper.png'),
-  rice: require('@/assets/images/crops/rice.png'),
-  yam: require('@/assets/images/crops/yam.png'),
-  cowpea: require('@/assets/images/crops/cowpea.png'),
-  cocoa: require('@/assets/images/crops/cocoa.png'),
-};
+import { tokens } from '@/constants/tokens';
+import { CROPS_DATA, CROP_IMAGES } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function LibraryScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCrops = CROPS_DATA.filter(crop =>
@@ -29,19 +16,13 @@ export default function LibraryScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title={t('tabs.library')} showBack={false} />
       <View style={styles.searchContainer}>
         <TextInput
-          style={[
-            styles.searchInput,
-            {
-              backgroundColor: colors.surface,
-              color: colors.text,
-              borderColor: colors.textSecondary + '30',
-            },
-          ]}
+          style={styles.searchInput}
           placeholder="Search crops..."
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={tokens.colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -52,18 +33,24 @@ export default function LibraryScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
           Supported Crops ({filteredCrops.length})
         </Text>
 
         {filteredCrops.map((crop) => (
           <TouchableOpacity
             key={crop.id}
-            style={[styles.cropCard, { backgroundColor: colors.surface }]}
-            onPress={() => router.push(`/library/${crop.dataset_context}`)}
+            style={[styles.cropCard, { backgroundColor: tokens.colors.surface }]}
+            onPress={() => router.push({
+              pathname: `/library/${crop.dataset_context}`,
+              params: { 
+                image: crop.asset || crop.image,
+                name: crop.name
+              }
+            })}
             activeOpacity={0.7}
           >
-            <View style={[styles.imageContainer, { backgroundColor: colors.surfaceVariant }]}>
+            <View style={[styles.imageContainer, { backgroundColor: tokens.colors.primary50 }]}>
               <Image 
                 source={CROP_IMAGES[crop.dataset_context] || { uri: crop.image }} 
                 style={styles.cropImage}
@@ -71,22 +58,22 @@ export default function LibraryScreen() {
               />
             </View>
             <View style={styles.cropContent}>
-              <Text style={[styles.cropName, { color: colors.text }]}>{crop.name}</Text>
-              <Text style={[styles.cropContext, { color: colors.textSecondary }]}>
+              <Text style={[styles.cropName, { color: tokens.colors.text }]}>{crop.name}</Text>
+              <Text style={[styles.cropContext, { color: tokens.colors.textSecondary }]}>
                 {getCropDescription(crop.dataset_context)}
               </Text>
             </View>
-            <Text style={styles.chevron}>›</Text>
+            <Text style={[styles.chevron, { color: tokens.colors.neutral400 }]}>›</Text>
           </TouchableOpacity>
         ))}
 
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: tokens.colors.primary50 }]}>
           <Text style={styles.infoIcon}>ℹ️</Text>
           <View style={styles.infoContent}>
-            <Text style={[styles.infoTitle, { color: colors.text }]}>
+            <Text style={[styles.infoTitle, { color: tokens.colors.text }]}>
               More Crops Coming Soon
             </Text>
-            <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+            <Text style={[styles.infoText, { color: tokens.colors.textSecondary }]}>
               We're constantly adding support for more crops. Stay updated with our latest releases.
             </Text>
           </View>
@@ -113,52 +100,52 @@ function getCropDescription(cropType: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   searchContainer: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xs,
   },
   searchInput: {
     height: 48,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
     fontSize: 16,
     borderWidth: 1,
+    backgroundColor: tokens.colors.surface,
+    color: tokens.colors.text,
+    borderColor: tokens.colors.border,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingTop: 8,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingTop: tokens.spacing.xs,
+    paddingBottom: tokens.spacing.xxl,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.sm,
   },
   cropCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.sm,
+    borderRadius: tokens.radius.lg,
+    marginBottom: tokens.spacing.md,
+    ...tokens.elevation.level1,
   },
   imageContainer: {
     width: 60,
     height: 60,
-    borderRadius: 12,
-    marginRight: 16,
+    borderRadius: tokens.radius.md,
+    marginRight: tokens.spacing.md,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
+    padding: tokens.spacing.xs,
   },
   cropImage: {
     width: '100%',
@@ -179,18 +166,16 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 24,
-    color: '#999',
   },
   infoCard: {
     flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 12,
-    marginTop: 12,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginTop: tokens.spacing.md,
   },
   infoIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   infoContent: {
     flex: 1,

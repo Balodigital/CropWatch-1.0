@@ -6,19 +6,17 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
 import { CROPS_DATA } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function CropSelectScreen() {
   const router = useRouter();
   const { image } = useLocalSearchParams<{ image: string }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
   const handleContinue = () => {
@@ -31,22 +29,16 @@ export default function CropSelectScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={[styles.backButton, { color: colors.text }]}>Back</Text>
-        </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{t('select_crop')}</Text>
-        <View style={{ width: 60 }} />
-      </View>
+    <View style={styles.container}>
+      <AppHeader title={t('scan.crop_select')} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Select the type of crop you are scanning
+        <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
+          {t('scan.crop_select')}
         </Text>
 
         <View style={styles.cropsGrid}>
@@ -56,10 +48,10 @@ export default function CropSelectScreen() {
               style={[
                 styles.cropCard,
                 {
-                  backgroundColor: colors.surface,
+                  backgroundColor: tokens.colors.surface,
                   borderColor:
                     selectedCrop === crop.dataset_context
-                      ? colors.primary
+                      ? tokens.colors.primary500
                       : 'transparent',
                   borderWidth: selectedCrop === crop.dataset_context ? 3 : 0,
                 },
@@ -67,12 +59,18 @@ export default function CropSelectScreen() {
               onPress={() => setSelectedCrop(crop.dataset_context)}
               activeOpacity={0.7}
             >
-              <Text style={styles.cropIcon}>{crop.image}</Text>
-              <Text style={[styles.cropName, { color: colors.text }]}>
+              <View style={[styles.imageContainer, { backgroundColor: tokens.colors.primary50 }]}>
+                <Image 
+                  source={crop.asset || { uri: crop.image }} 
+                  style={styles.cropImage}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={[styles.cropName, { color: tokens.colors.text }]}>
                 {crop.name}
               </Text>
               {selectedCrop === crop.dataset_context && (
-                <View style={[styles.checkmark, { backgroundColor: colors.primary }]}>
+                <View style={[styles.checkmark, { backgroundColor: tokens.colors.primary500 }]}>
                   <Text style={styles.checkmarkText}>✓</Text>
                 </View>
               )}
@@ -87,67 +85,62 @@ export default function CropSelectScreen() {
             styles.continueButton,
             {
               backgroundColor: selectedCrop
-                ? colors.primary
-                : colors.textSecondary + '40',
+                ? tokens.colors.primary500
+                : tokens.colors.neutral300,
             },
           ]}
           onPress={handleContinue}
           disabled={!selectedCrop}
         >
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={styles.continueText}>{t('common.next')}</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
+    backgroundColor: tokens.colors.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: tokens.spacing.md,
   },
   subtitle: {
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: tokens.spacing.lg,
   },
   cropsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: tokens.spacing.md,
   },
   cropCard: {
     width: '47%',
-    padding: 20,
-    borderRadius: 16,
+    padding: tokens.spacing.lg,
+    borderRadius: tokens.radius.lg,
     alignItems: 'center',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    ...tokens.elevation.level1,
   },
-  cropIcon: {
-    fontSize: 48,
-    marginBottom: 8,
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.sm,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: tokens.spacing.xs,
+  },
+  cropImage: {
+    width: '100%',
+    height: '100%',
+    aspectRatio: 1,
   },
   cropName: {
     fontSize: 16,
@@ -169,11 +162,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footer: {
-    padding: 16,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   continueButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   continueText: {

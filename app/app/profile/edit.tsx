@@ -8,6 +8,7 @@ import { Avatar } from '@/components/profile/Avatar';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -93,6 +94,7 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={styles.container}
     >
+      <AppHeader title="Edit Profile" />
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.avatarSection}>
           <Avatar uri={avatarUrl} size={120} loading={pickingImage} />
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
     gap: tokens.spacing.md,
   },
   footer: {
-    marginTop: tokens.spacing.huge,
+    marginTop: tokens.spacing.xxl,
     gap: tokens.spacing.sm,
   },
   saveButton: {

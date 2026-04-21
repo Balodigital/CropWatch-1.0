@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ProfileCard } from '@/components/profile/ProfileCard';
 import { SettingsItem } from '@/components/profile/SettingsItem';
 import { Button } from '@/components/ui/Button';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -40,7 +41,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
+      <AppHeader title="Profile" />
+      <ScrollView contentContainerStyle={styles.contentContainer}>
       <ProfileCard 
         name={profile?.full_name || user?.user_metadata?.full_name} 
         email={user?.email}
@@ -93,7 +96,8 @@ export default function ProfileScreen() {
           textStyle={{ color: tokens.colors.error500 }}
         />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Switch, Linking, Platform } from 'r
 import { tokens } from '@/constants/tokens';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from '@/components/ui/Button';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function PermissionsScreen() {
   const openSettings = () => {
@@ -27,7 +28,9 @@ export default function PermissionsScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
+      <AppHeader title="App Permissions" />
+      <ScrollView contentContainerStyle={styles.contentContainer}>
       <Text style={[tokens.typography.body, styles.description]}>
         CropWatch requires these permissions to function correctly. You can manage them in your device settings.
       </Text>
@@ -61,7 +64,8 @@ export default function PermissionsScreen() {
           icon={<MaterialIcons name="settings" size={20} color={tokens.colors.primary500} />}
         />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

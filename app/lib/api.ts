@@ -3,7 +3,15 @@ import { runDeepSeekAnalysis, validateAndMapConfidence } from './deepseek';
 import { OfflineStorage } from './offline';
 import { Diagnosis } from './supabase';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+const getApiBaseUrl = () => {
+  let url = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+  // Remove trailing slash if present
+  url = url.replace(/\/$/, '');
+  // Ensure the URL always ends with /api for consistency with the server routing
+  return url.endsWith('/api') ? url : `${url}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface DiagnosisResult {
   success: boolean;

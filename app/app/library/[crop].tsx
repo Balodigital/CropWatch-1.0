@@ -1,9 +1,9 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { CROP_IMAGES } from '@/lib/supabase';
 
 const CROP_DETAILS: Record<string, {
   description: string;
@@ -214,18 +214,24 @@ const CROP_DETAILS: Record<string, {
 
 export default function CropDetailScreen() {
   const router = useRouter();
-  const { crop } = useLocalSearchParams<{ crop: string }>();
+  const { crop, image, name } = useLocalSearchParams<{ 
+    crop: string; 
+    image: string;
+    name: string;
+  }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   const cropData = CROP_DETAILS[crop?.toLowerCase() || ''];
+  const cropTitle = crop ? crop.charAt(0).toUpperCase() + crop.slice(1) : 'Crop Detail';
 
   if (!cropData) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>Crop not found</Text>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <AppHeader title="Crop Not Found" />
+        <View style={styles.centerContent}>
+          <Text style={[tokens.typography.body, { color: tokens.colors.text }]}>Crop not found</Text>
+        </View>
+      </View>
     );
   }
 
@@ -238,163 +244,189 @@ export default function CropDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={[styles.backButton, { color: colors.text }]}>← Back</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <AppHeader title={cropTitle} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.titleCard, { backgroundColor: colors.primary }]}>
-          <Text style={styles.cropIcon}>{getCropIcon(crop || '')}</Text>
-          <Text style={styles.cropName}>
-            {crop?.charAt(0).toUpperCase() + crop?.slice(1)}
+        <View style={[styles.titleCard, { backgroundColor: tokens.colors.surface }]}>
+          <View style={[styles.imageContainer, { backgroundColor: tokens.colors.primary50 }]}>
+            <Image 
+              source={(() => {
+                if (image) {
+                  if (typeof image === 'string') {
+                    if (image.startsWith('http')) {
+                      return { uri: image };
+                    }
+                    const assetId = parseInt(image, 10);
+                    if (!isNaN(assetId)) {
+                      return assetId;
+                    }
+                  }
+                }
+                // Fallback to centralized images
+                return CROP_IMAGES[crop?.toLowerCase() || ''] || { uri: 'https://via.placeholder.com/400' };
+              })()} 
+              style={styles.cropImage}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={[styles.cropName, { color: tokens.colors.text }]}>
+            {name || (crop ? crop.charAt(0).toUpperCase() + crop.slice(1) : 'Crop Detail')}
           </Text>
-          <Text style={styles.cropDescription}>{cropData.description}</Text>
+          <Text style={[styles.cropDescription, { color: tokens.colors.textSecondary }]}>{cropData.description}</Text>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
           Common Diseases
         </Text>
 
         {cropData.diseases.map((disease, idx) => (
           <View
             key={idx}
-            style={[styles.diseaseCard, { backgroundColor: colors.surface }]}
+            style={[styles.diseaseCard, { backgroundColor: tokens.colors.surface }]}
           >
-            <Text style={[styles.diseaseName, { color: colors.text }]}>
+            <Text style={[styles.diseaseName, { color: tokens.colors.text }]}>
               {disease.name}
             </Text>
             <View style={styles.diseaseSection}>
-              <Text style={[styles.diseaseLabel, { color: colors.primary }]}>
+              <Text style={[styles.diseaseLabel, { color: tokens.colors.primary500 }]}>
                 Symptoms
               </Text>
-              <Text style={[styles.diseaseText, { color: colors.textSecondary }]}>
+              <Text style={[styles.diseaseText, { color: tokens.colors.textSecondary }]}>
                 {disease.symptoms}
               </Text>
             </View>
             <View style={styles.diseaseSection}>
-              <Text style={[styles.diseaseLabel, { color: colors.primary }]}>
+              <Text style={[styles.diseaseLabel, { color: tokens.colors.primary500 }]}>
                 Treatment
               </Text>
-              <Text style={[styles.diseaseText, { color: colors.textSecondary }]}>
+              <Text style={[styles.diseaseText, { color: tokens.colors.textSecondary }]}>
                 {disease.treatment}
               </Text>
             </View>
           </View>
         ))}
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
           Farming Tips
         </Text>
 
-        <View style={[styles.tipsCard, { backgroundColor: colors.surface }]}>
+        <View style={[styles.tipsCard, { backgroundColor: tokens.colors.surface }]}>
           {cropData.tips.map((tip, idx) => (
             <View key={idx} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
-              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+              <Text style={[styles.tipText, { color: tokens.colors.textSecondary }]}>
                 {tip}
               </Text>
             </View>
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
-  header: {
-    padding: 16,
-  },
-  backButton: {
-    fontSize: 16,
-    fontWeight: '500',
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   titleCard: {
-    padding: 24,
-    borderRadius: 16,
+    padding: tokens.spacing.xl,
+    borderRadius: tokens.radius.lg,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: tokens.spacing.xl,
+    ...tokens.elevation.level1,
   },
-  cropIcon: {
-    fontSize: 64,
-    marginBottom: 12,
+  imageContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: tokens.spacing.sm,
+  },
+  cropImage: {
+    width: '100%',
+    height: '100%',
+    aspectRatio: 1,
   },
   cropName: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.xs,
   },
   cropDescription: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
     lineHeight: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.sm,
   },
   diseaseCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
+    backgroundColor: tokens.colors.surface,
+    ...tokens.elevation.level1,
   },
   diseaseName: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   diseaseSection: {
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   diseaseLabel: {
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 4,
+    color: tokens.colors.primary500,
   },
   diseaseText: {
     fontSize: 13,
     lineHeight: 18,
+    color: tokens.colors.textSecondary,
   },
   tipsCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.colors.surface,
   },
   tipItem: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   tipBullet: {
     fontSize: 14,
-    marginRight: 8,
+    marginRight: tokens.spacing.sm,
   },
   tipText: {
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
+    color: tokens.colors.textSecondary,
   },
 });

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
+import i18n from '@/i18n';
 
 interface AuthContextType {
   session: Session | null;
@@ -62,6 +63,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 2. Check Supabase session
     const initAuth = async () => {
+      // Load saved language first
+      try {
+        const savedLang = await AsyncStorage.getItem('@cropwatch_language');
+        if (savedLang) {
+          i18n.changeLanguage(savedLang);
+        }
+      } catch (e) {
+        console.error('Error loading saved language', e);
+      }
+
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -74,6 +85,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(newSession);
           setUser(newSession?.user ?? null);
           if (newSession?.user) {
+            // Sync language from profile
+            const { data } = await supabase
+              .from('profiles')
+              .select('language_pref')
+              .eq('id', newSession.user.id)
+              .single();
+            
+            if (data?.language_pref) {
+              i18n.changeLanguage(data.language_pref);
+              await AsyncStorage.setItem('@cropwatch_language', data.language_pref);
+            }
             await fetchProfile(newSession.user.id);
           } else {
             setProfile(null);

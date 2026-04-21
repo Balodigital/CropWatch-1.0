@@ -83,7 +83,7 @@ function RootLayoutNav() {
         {/* Auth Flow */}
         <Stack.Screen name="(auth)" options={{ presentation: 'card' }} />
         
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

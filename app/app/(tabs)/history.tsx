@@ -8,12 +8,16 @@ import {
   ScrollView,
   FlatList,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { OfflineStorage } from '@/lib/offline';
 import { Diagnosis } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { tokens } from '@/constants/tokens';
+import { CROP_IMAGES } from '@/lib/supabase';
 
 interface HistoryItem {
   id: string;
@@ -45,8 +49,8 @@ export default function HistoryScreen() {
         const pending = pendingScans.find((s) => s.id === id);
         return {
           id,
-          cropType: pending?.cropType || 'Unknown',
-          cropIcon: getCropIcon(pending?.cropType || ''),
+          cropType: pending?.cropType || 'Crop',
+          cropIcon: '', // Not used anymore
           diagnosis: data.diagnosis,
           createdAt: new Date(data.timestamp).toLocaleDateString(),
           status: 'completed' as const,
@@ -57,7 +61,7 @@ export default function HistoryScreen() {
     const pendingItems: HistoryItem[] = pendingScans.map((scan) => ({
       id: scan.id,
       cropType: scan.cropType,
-      cropIcon: getCropIcon(scan.cropType),
+      cropIcon: '', // Not used anymore
       diagnosis: [],
       createdAt: new Date(scan.timestamp).toLocaleDateString(),
       status: 'pending' as const,
@@ -112,7 +116,13 @@ export default function HistoryScreen() {
       >
         <View style={styles.cardHeader}>
           <View style={styles.cropInfo}>
-            <Text style={styles.cropIcon}>{item.cropIcon}</Text>
+            <View style={[styles.imageContainer, { backgroundColor: tokens.colors.primary50 }]}>
+              <Image 
+                source={CROP_IMAGES[item.cropType.toLowerCase()] || { uri: 'https://via.placeholder.com/40' }} 
+                style={styles.cropImage}
+                resizeMode="contain"
+              />
+            </View>
             <View>
               <Text style={[styles.cropName, { color: colors.text }]}>
                 {item.cropType.charAt(0).toUpperCase() + item.cropType.slice(1)}
@@ -177,7 +187,8 @@ export default function HistoryScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title={t('tabs.history')} showBack={false} />
       {history.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>📋</Text>
@@ -210,23 +221,12 @@ export default function HistoryScreen() {
   );
 }
 
-function getCropIcon(cropType: string): string {
-  const icons: Record<string, string> = {
-    tomato: '🍅',
-    cassava: '🫚',
-    maize: '🌽',
-    pepper: '🌶️',
-    rice: '🍚',
-    yam: '🍠',
-    cowpea: '🫘',
-    cocoa: '🍫',
-  };
-  return icons[cropType.toLowerCase()] || '🌱';
-}
+// getCropIcon removed in favor of centralized images
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   listContent: {
     padding: 16,
@@ -252,9 +252,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cropIcon: {
-    fontSize: 36,
+  imageContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: tokens.radius.md,
     marginRight: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+  },
+  cropImage: {
+    width: '100%',
+    height: '100%',
   },
   cropName: {
     fontSize: 18,

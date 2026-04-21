@@ -6,13 +6,14 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
 import { Diagnosis } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 import { OfflineStorage } from '@/lib/offline';
+import { CROP_IMAGES } from '@/lib/supabase';
 
 export default function ResultScreen() {
   const router = useRouter();
@@ -22,8 +23,6 @@ export default function ResultScreen() {
     image: string;
   }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   const diagnoses: Diagnosis[] = diagnosis ? JSON.parse(diagnosis) : [];
 
@@ -38,13 +37,13 @@ export default function ResultScreen() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'Mild':
-        return colors.success;
+        return tokens.colors.success500;
       case 'Moderate':
-        return colors.warning;
+        return tokens.colors.warning500;
       case 'Severe':
-        return colors.error;
+        return tokens.colors.error500;
       default:
-        return colors.textSecondary;
+        return tokens.colors.textSecondary;
     }
   };
 
@@ -72,16 +71,10 @@ export default function ResultScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Diagnosis Results</Text>
-        <View style={styles.cropBadge}>
-          <Text style={styles.cropIcon}>{getCropIcon(cropType || '')}</Text>
-          <Text style={[styles.cropName, { color: colors.primary }]}>
-            {cropType?.charAt(0).toUpperCase() + cropType?.slice(1)}
-          </Text>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <AppHeader 
+        title={t('result.title')} 
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -91,12 +84,11 @@ export default function ResultScreen() {
         {diagnoses.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🤔</Text>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              No Clear Diagnosis
+            <Text style={[styles.emptyTitle, { color: tokens.colors.text }]}>
+              {t('result.empty_title')}
             </Text>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              We couldn't identify the issue clearly. Please try with a clearer
-              photo or add more symptom description.
+            <Text style={[styles.emptyText, { color: tokens.colors.textSecondary }]}>
+              {t('result.empty_desc')}
             </Text>
           </View>
         ) : (
@@ -105,17 +97,20 @@ export default function ResultScreen() {
               <View
                 style={[
                   styles.primaryResult,
-                  { backgroundColor: getSeverityBg(diagnoses[0].severity) },
+                  { backgroundColor: tokens.colors.error80 },
                 ]}
               >
-                <Text style={styles.mostLikely}>Most Likely</Text>
-                <Text style={[styles.diseaseName, { color: colors.text }]}>
-                  {diagnoses[0].name}
+                <Text style={[styles.mostLikely, { color: tokens.colors.error30 }]}>
+                  {t('result.most_likely')}
                 </Text>
-                <View style={styles.severityRow}>
+                
+                <View style={styles.diseaseHeaderRow}>
+                  <Text style={[styles.diseaseName, { color: tokens.colors.text }]}>
+                    {diagnoses[0].name}
+                  </Text>
                   <View
                     style={[
-                      styles.severityBadge,
+                      styles.severityBadgeMain,
                       { backgroundColor: getSeverityColor(diagnoses[0].severity) },
                     ]}
                   >
@@ -123,37 +118,43 @@ export default function ResultScreen() {
                       {diagnoses[0].severity}
                     </Text>
                   </View>
-                  <Text style={[styles.confidenceText, { color: colors.textSecondary }]}>
-                    {diagnoses[0].confidence}% confidence
+                </View>
+
+                <View style={styles.confidenceSection}>
+                  <Text style={[styles.confidenceText, { color: tokens.colors.textSecondary }]}>
+                    {diagnoses[0].confidence}% {t('result.confidence')}
+                  </Text>
+                  <Text style={[styles.microcopy, { color: tokens.colors.textSecondary }]}>
+                    {t('result.based_on_image')}
                   </Text>
                 </View>
               </View>
             </View>
 
             {diagnoses.length > 1 && (
-              <Text style={[styles.otherResults, { color: colors.textSecondary }]}>
-                Other possibilities:
+              <Text style={[styles.otherResults, { color: tokens.colors.textSecondary }]}>
+                {t('result.others')}
               </Text>
             )}
 
             {diagnoses.slice(1).map((d, index) => (
               <View
                 key={index}
-                style={[styles.diagnosisCard, { backgroundColor: colors.surface }]}
+                style={[styles.diagnosisCard, { backgroundColor: tokens.colors.surface }]}
               >
                 <View style={styles.cardHeader}>
-                  <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  <Text style={[styles.cardTitle, { color: tokens.colors.text }]}>
                     {d.name}
                   </Text>
                   <View
                     style={[
-                      styles.miniSeverity,
+                      styles.severityBadgeSmall,
                       { backgroundColor: getSeverityColor(d.severity) + '20' },
                     ]}
                   >
                     <Text
                       style={[
-                        styles.miniSeverityText,
+                        styles.severityTextSmall,
                         { color: getSeverityColor(d.severity) },
                       ]}
                     >
@@ -161,8 +162,8 @@ export default function ResultScreen() {
                     </Text>
                   </View>
                 </View>
-                <Text style={[styles.cardConfidence, { color: colors.textSecondary }]}>
-                  {d.confidence}% confidence
+                <Text style={[styles.cardConfidence, { color: tokens.colors.textSecondary }]}>
+                  {d.confidence}% {t('result.confidence')}
                 </Text>
               </View>
             ))}
@@ -172,132 +173,133 @@ export default function ResultScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.treatmentButton, { backgroundColor: colors.primary }]}
+          style={[styles.primaryButton, { backgroundColor: tokens.colors.primary500 }]}
           onPress={() => handleViewTreatment(0)}
           disabled={diagnoses.length === 0}
         >
-          <Text style={styles.treatmentButtonText}>
-            View Treatment
+          <Text style={styles.primaryButtonText}>
+            {t('result.view_treatment')}
           </Text>
         </TouchableOpacity>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.secondaryButton, { borderColor: colors.primary }]}
-            onPress={() => handleViewPrevention(0)}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-              Prevention Tips
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.newScanButton, { backgroundColor: colors.surface }]}
-            onPress={handleNewScan}
-          >
-            <Text style={styles.newScanIcon}>🔄</Text>
-          </TouchableOpacity>
-        </View>
+        
+        <TouchableOpacity
+          style={[styles.secondaryButton, { borderColor: tokens.colors.primary500 }]}
+          onPress={() => handleViewPrevention(0)}
+        >
+          <Text style={[styles.secondaryButtonText, { color: tokens.colors.primary500 }]}>
+            {t('result.prevention_tips')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.newScanLink}
+          onPress={handleNewScan}
+        >
+          <Text style={[styles.newScanLinkText, { color: tokens.colors.textSecondary }]}>
+            {t('common.new_scan') || 'Start New Scan'}
+          </Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-function getCropIcon(cropType: string): string {
-  const icons: Record<string, string> = {
-    tomato: '🍅',
-    cassava: '🫚',
-    maize: '🌽',
-    pepper: '🌶️',
-    rice: '🍚',
-    yam: '🍠',
-    cowpea: '🫘',
-    cocoa: '🍫',
-  };
-  return icons[cropType?.toLowerCase() || ''] || '🌱';
-}
+// getCropIcon removed in favor of centralized images
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
+    backgroundColor: tokens.colors.background,
   },
   cropBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: tokens.spacing.sm,
+    paddingVertical: 4,
+    backgroundColor: tokens.colors.primary50,
+    borderRadius: tokens.radius.full,
   },
-  cropIcon: {
-    fontSize: 20,
-    marginRight: 6,
+  miniImageContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: tokens.radius.full,
+    marginRight: 4,
+    overflow: 'hidden',
+  },
+  miniCropImage: {
+    width: '100%',
+    height: '100%',
   },
   cropName: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   summaryCard: {
-    marginBottom: 24,
+    marginBottom: tokens.spacing.xl,
   },
   primaryResult: {
-    padding: 20,
-    borderRadius: 16,
+    padding: tokens.spacing.lg,
+    borderRadius: tokens.radius.lg,
+    ...tokens.elevation.level1,
+  },
+  diseaseHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: tokens.spacing.sm,
   },
   mostLikely: {
     fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    opacity: 0.8,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 4,
+    opacity: 0.9,
   },
   diseaseName: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 12,
+    flex: 1,
+    marginRight: tokens.spacing.sm,
   },
-  severityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  severityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+  severityBadgeMain: {
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: 6,
+    borderRadius: tokens.radius.md,
   },
   severityText: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  confidenceSection: {
+    marginTop: tokens.spacing.xs,
   },
   confidenceText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  microcopy: {
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   otherResults: {
     fontSize: 14,
     fontWeight: '500',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.md,
   },
   diagnosisCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
+    ...tokens.elevation.level1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -310,13 +312,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  miniSeverity: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
+  severityBadgeSmall: {
+    paddingHorizontal: tokens.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: tokens.radius.sm,
   },
-  miniSeverityText: {
-    fontSize: 11,
+  severityTextSmall: {
+    fontSize: 12,
     fontWeight: '600',
   },
   cardConfidence: {
@@ -324,16 +326,16 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    padding: 32,
+    padding: tokens.spacing.xxl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: tokens.spacing.md,
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   emptyText: {
     fontSize: 14,
@@ -341,47 +343,40 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   footer: {
-    padding: 16,
-    gap: 12,
+    padding: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxl,
+    backgroundColor: tokens.colors.background,
   },
-  treatmentButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+  primaryButton: {
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
+    marginBottom: tokens.spacing.md,
+    ...tokens.elevation.level2,
   },
-  treatmentButtonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
+    fontWeight: '700',
   },
   secondaryButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     borderWidth: 2,
     alignItems: 'center',
+    marginBottom: tokens.spacing.lg,
   },
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },
-  newScanButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    justifyContent: 'center',
+  newScanLink: {
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.xs,
   },
-  newScanIcon: {
-    fontSize: 24,
+  newScanLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });

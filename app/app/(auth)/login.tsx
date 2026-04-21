@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
@@ -20,6 +21,7 @@ import { Input } from '@/components/ui/Input';
 import { ChevronLeft, Sprout } from 'lucide-react-native';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,12 +39,12 @@ export default function LoginScreen() {
     try {
       const { error } = await signIn(email, password);
       if (error) {
-        Alert.alert('Sign In Failed', error);
+        Alert.alert(t('auth.login_failed'), error);
       } else {
         router.replace('/(tabs)');
       }
     } catch (err: any) {
-      Alert.alert('Sign In Failed', 'An unexpected error occurred.');
+      Alert.alert(t('auth.login_failed'), t('auth.unexpected_error'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ export default function LoginScreen() {
             style={styles.backButton}
           >
             <ChevronLeft size={24} color={theme.primary} />
-            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>Back</Text>
+            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
           <View style={styles.header}>
@@ -68,17 +70,17 @@ export default function LoginScreen() {
               <Sprout size={32} color={theme.primary} />
             </View>
             <Text style={[styles.headline, Typography.headlineLarge, { color: theme.onSurface }]}>
-              Welcome Back
+              {t('auth.welcome_back')}
             </Text>
             <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8, textAlign: 'center' }]}>
-              Sign in to continue monitoring your crops and getting AI diagnoses.
+              {t('auth.sign_in_desc')}
             </Text>
           </View>
 
           <View style={styles.form}>
             <Input
-              label="Email Address"
-              placeholder="Enter your email"
+              label={t('auth.email_label')}
+              placeholder={t('auth.email_label')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -86,8 +88,8 @@ export default function LoginScreen() {
               success={emailValid}
             />
             <Input
-              label="Password"
-              placeholder="Enter your password"
+              label={t('auth.password_label')}
+              placeholder={t('auth.password_label')}
               value={password}
               onChangeText={setPassword}
               isPassword
@@ -98,12 +100,12 @@ export default function LoginScreen() {
               style={styles.forgotPassword}
             >
               <Text style={[Typography.labelLarge, { color: theme.primary }]}>
-                Forgot Password?
+                {t('auth.forgot_password')}
               </Text>
             </TouchableOpacity>
 
             <Button
-              title="Sign In"
+              title={t('auth.login')}
               onPress={handleSignIn}
               loading={loading}
               disabled={!formValid}
@@ -112,11 +114,11 @@ export default function LoginScreen() {
 
             <View style={styles.footer}>
               <Text style={[Typography.bodyMedium, { color: theme.onSurfaceVariant }]}>
-                Don't have an account?{' '}
+                {t('auth.no_account')}{' '}
               </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
                 <Text style={[Typography.labelLarge, { color: theme.primary, fontWeight: '700' }]}>
-                  Sign Up
+                  {t('auth.sign_up')}
                 </Text>
               </TouchableOpacity>
             </View>

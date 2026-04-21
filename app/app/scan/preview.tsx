@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function PreviewScreen() {
   const router = useRouter();
@@ -28,9 +29,9 @@ export default function PreviewScreen() {
     return (
       <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <MaterialIcons name="error-outline" size={64} color={tokens.colors.neutral400} style={{ marginBottom: tokens.spacing.md }} />
-        <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>No image captured</Text>
+        <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>{t('scan.no_image') || 'No image captured'}</Text>
         <Button 
-          title="Go Back"
+          title={t('common.back')}
           onPress={handleRetake}
           variant="outline"
           style={{ marginTop: tokens.spacing.lg, minWidth: 200 }}
@@ -40,18 +41,8 @@ export default function PreviewScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable 
-          onPress={() => router.back()} 
-          hitSlop={12}
-          style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-        >
-          <MaterialIcons name="arrow-back" size={24} color={tokens.colors.text} />
-        </Pressable>
-        <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>Preview</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <View style={styles.container}>
+      <AppHeader title={t('scan.preview')} />
 
       <View style={styles.imageContainer}>
         <Image source={{ uri: image }} style={styles.previewImage} />
@@ -60,26 +51,26 @@ export default function PreviewScreen() {
       <Card style={styles.tipContainer} elevation="level1">
         <MaterialIcons name="lightbulb" size={24} color={tokens.colors.warning500} style={{ marginRight: tokens.spacing.md }} />
         <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary, flex: 1 }]}>
-          Make sure the leaf is clearly visible and well-lit for the most accurate AI diagnosis.
+          {t('scan.preview_tip')}
         </Text>
       </Card>
 
       <View style={styles.buttonContainer}>
         <Button
-          title="Retake"
+          title={t('common.retake')}
           onPress={handleRetake}
           variant="outline"
           style={{ flex: 1 }}
         />
         <Button
-          title="Continue"
+          title={t('common.continue')}
           onPress={handleContinue}
           variant="primary"
           icon={<MaterialIcons name="check" size={20} color={tokens.colors.surface} />}
           style={{ flex: 2 }}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

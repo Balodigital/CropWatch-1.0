@@ -1,10 +1,9 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
 import { Diagnosis } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function PreventionScreen() {
   const router = useRouter();
@@ -14,8 +13,6 @@ export default function PreventionScreen() {
     cropType: string;
   }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   const diagnoses: Diagnosis[] = diagnosis ? JSON.parse(diagnosis) : [];
   const currentIndex = parseInt(index || '0', 10);
@@ -24,30 +21,24 @@ export default function PreventionScreen() {
   const preventionTips = parsePrevention(currentDiagnosis?.prevention || '', cropType || '');
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={[styles.backButton, { color: colors.text }]}>Back</Text>
-        </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{t('prevention')}</Text>
-        <View style={{ width: 60 }} />
-      </View>
+    <View style={styles.container}>
+      <AppHeader title={t('prevention')} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.diseaseCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.diseaseLabel, { color: colors.textSecondary }]}>
+        <View style={[styles.diseaseCard, { backgroundColor: tokens.colors.surface }]}>
+          <Text style={[styles.diseaseLabel, { color: tokens.colors.textSecondary }]}>
             Preventing
           </Text>
-          <Text style={[styles.diseaseName, { color: colors.text }]}>
+          <Text style={[styles.diseaseName, { color: tokens.colors.text }]}>
             {currentDiagnosis?.name}
           </Text>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
           Season-to-Season Prevention Tips
         </Text>
 
@@ -55,19 +46,19 @@ export default function PreventionScreen() {
           {preventionTips.map((tip, idx) => (
             <View key={idx} style={styles.tipItem}>
               <View style={styles.timeline}>
-                <View style={[styles.timelineDot, { backgroundColor: colors.primary }]} />
+                <View style={[styles.timelineDot, { backgroundColor: tokens.colors.primary500 }]} />
                 {idx < preventionTips.length - 1 && (
-                  <View style={[styles.timelineLine, { backgroundColor: colors.textSecondary + '30' }]} />
+                  <View style={[styles.timelineLine, { backgroundColor: tokens.colors.neutral200 }]} />
                 )}
               </View>
-              <View style={[styles.tipCard, { backgroundColor: colors.surface }]}>
-                <Text style={[styles.tipPhase, { color: colors.primary }]}>
+              <View style={[styles.tipCard, { backgroundColor: tokens.colors.surface }]}>
+                <Text style={[styles.tipPhase, { color: tokens.colors.primary500 }]}>
                   {tip.phase}
                 </Text>
-                <Text style={[styles.tipTitle, { color: colors.text }]}>
+                <Text style={[styles.tipTitle, { color: tokens.colors.text }]}>
                   {tip.title}
                 </Text>
-                <Text style={[styles.tipDesc, { color: colors.textSecondary }]}>
+                <Text style={[styles.tipDesc, { color: tokens.colors.textSecondary }]}>
                   {tip.description}
                 </Text>
               </View>
@@ -75,26 +66,26 @@ export default function PreventionScreen() {
           ))}
         </View>
 
-        <View style={[styles.seasonCard, { backgroundColor: colors.secondary + '20' }]}>
+        <View style={[styles.seasonCard, { backgroundColor: tokens.colors.primary50 }]}>
           <Text style={styles.seasonIcon}>🌱</Text>
           <View style={styles.seasonContent}>
-            <Text style={[styles.seasonTitle, { color: colors.text }]}>
+            <Text style={[styles.seasonTitle, { color: tokens.colors.text }]}>
               Track Your Progress
             </Text>
-            <Text style={[styles.seasonText, { color: colors.textSecondary }]}>
+            <Text style={[styles.seasonText, { color: tokens.colors.textSecondary }]}>
               Use the History tab to keep track of issues throughout the season
               and learn from past patterns.
             </Text>
           </View>
         </View>
 
-        <View style={[styles.alertCard, { backgroundColor: colors.error + '10' }]}>
+        <View style={[styles.alertCard, { backgroundColor: tokens.colors.error50 }]}>
           <Text style={styles.alertIcon}>🚨</Text>
           <View style={styles.alertContent}>
-            <Text style={[styles.alertTitle, { color: colors.error }]}>
+            <Text style={[styles.alertTitle, { color: tokens.colors.error500 }]}>
               Act Early
             </Text>
-            <Text style={[styles.alertText, { color: colors.textSecondary }]}>
+            <Text style={[styles.alertText, { color: tokens.colors.textSecondary }]}>
               Most crop diseases spread rapidly. Early detection and treatment
               can save up to 80% of your harvest.
             </Text>
@@ -104,13 +95,13 @@ export default function PreventionScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.doneButton, { backgroundColor: colors.primary }]}
+          style={[styles.doneButton, { backgroundColor: tokens.colors.primary500 }]}
           onPress={() => router.replace('/(tabs)')}
         >
           <Text style={styles.doneButtonText}>Got It</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -166,31 +157,20 @@ function parsePrevention(preventionText: string, cropType: string): PreventionTi
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
+    backgroundColor: tokens.colors.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   diseaseCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.xl,
+    ...tokens.elevation.level1,
   },
   diseaseLabel: {
     fontSize: 12,
@@ -203,10 +183,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 20,
+    marginBottom: tokens.spacing.lg,
   },
   timelineContainer: {
-    marginBottom: 24,
+    marginBottom: tokens.spacing.xl,
   },
   tipItem: {
     flexDirection: 'row',
@@ -229,15 +209,11 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    marginLeft: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginLeft: tokens.spacing.md,
+    marginBottom: tokens.spacing.md,
+    ...tokens.elevation.level1,
   },
   tipPhase: {
     fontSize: 11,
@@ -256,13 +232,13 @@ const styles = StyleSheet.create({
   },
   seasonCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.md,
   },
   seasonIcon: {
     fontSize: 32,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   seasonContent: {
     flex: 1,
@@ -278,12 +254,12 @@ const styles = StyleSheet.create({
   },
   alertCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
   },
   alertIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   alertContent: {
     flex: 1,
@@ -298,11 +274,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   footer: {
-    padding: 16,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   doneButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   doneButtonText: {
