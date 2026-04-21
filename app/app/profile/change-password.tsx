@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { StrengthMeter } from '@/components/auth/StrengthMeter';
 import { usePasswordValidation } from '@/hooks/use-password-validation';
 import { supabase } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function ChangePasswordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={styles.container}
     >
+      <AppHeader title="Change Password" />
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.form}>
           <Input
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
     height: tokens.spacing.lg,
   },
   footer: {
-    marginTop: tokens.spacing.huge,
+    marginTop: tokens.spacing.xxl,
     gap: tokens.spacing.sm,
   },
   saveButton: {

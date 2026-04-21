@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   StyleSheet,
   View,
@@ -11,13 +12,14 @@ import {
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { tokens } from '@/constants/tokens';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from '@/components/ui/Button';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 const { width } = Dimensions.get('window');
 
 export default function CameraScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [facing] = useState<CameraType>('back');
@@ -40,7 +42,7 @@ export default function CameraScreen() {
           });
         }
       } catch (error) {
-        Alert.alert('Error', 'Failed to capture image. Please try again or use the gallery.');
+        Alert.alert(t('common.error'), t('scan.capture_error'));
       } finally {
         setIsCapturing(false);
       }
@@ -68,37 +70,38 @@ export default function CameraScreen() {
   if (!permission) {
     return (
       <View style={[styles.container, { backgroundColor: tokens.colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={[tokens.typography.body, { color: tokens.colors.text }]}>Loading camera system...</Text>
+        <Text style={[tokens.typography.body, { color: tokens.colors.text }]}>{t('scan.loading_system')}</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: tokens.colors.background }]}>
+      <View style={[styles.container, { backgroundColor: tokens.colors.background }]}>
+        <AppHeader title="" showBack onBack={() => router.back()} />
         <View style={styles.permissionContainer}>
           <MaterialIcons name="camera-alt" size={80} color={tokens.colors.primary500} style={{ marginBottom: tokens.spacing.xl }} />
-          <Text style={[tokens.typography.heading, { color: tokens.colors.text, marginBottom: tokens.spacing.sm, textAlign: 'center' }]}>
-            Camera Access Required
+          <Text style={[tokens.typography.heading, { color: tokens.colors.text, marginBottom: tokens.spacing.md, textAlign: 'center' }]}>
+            {t('scan.camera_req_title')}
           </Text>
-          <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary, textAlign: 'center', marginBottom: tokens.spacing.xxl }]}>
-            We need camera access to capture high-quality images of your crop leaves for AI disease diagnosis.
+          <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary, textAlign: 'center', marginBottom: tokens.spacing.xxl, paddingHorizontal: tokens.spacing.xl }]}>
+            {t('scan.camera_req_desc')}
           </Text>
           <Button 
-            title="Grant Permission" 
+            title={t('scan.grant_perm')} 
             onPress={requestPermission} 
             size="large"
             style={{ width: '100%', marginBottom: tokens.spacing.md }}
           />
           <Button 
-            title="Upload from Gallery" 
+            title={t('scan.upload_gallery')} 
             onPress={pickImage} 
             variant="outline"
             size="large"
             style={{ width: '100%' }}
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -109,16 +112,13 @@ export default function CameraScreen() {
         style={styles.camera}
         facing={facing}
       >
-        <SafeAreaView style={styles.overlay}>
-          <View style={styles.header}>
-            <Pressable
-              style={({ pressed }) => [styles.closeButton, { opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.back()}
-              hitSlop={12}
-            >
-              <MaterialIcons name="close" size={28} color={tokens.colors.surface} />
-            </Pressable>
-          </View>
+        <View style={styles.overlay}>
+          <AppHeader 
+            title={t('scan.title')} 
+            showBack 
+            onBack={() => router.back()}
+            rightAction={<View style={{ width: 40 }} />}
+          />
 
           <View style={styles.frameContainer}>
             <View style={styles.frame}>
@@ -128,7 +128,7 @@ export default function CameraScreen() {
               <View style={[styles.corner, styles.bottomRight]} />
             </View>
             <Text style={styles.hintText}>
-              Center the affected leaf within the frame
+              {t('scan.camera_hint')}
             </Text>
           </View>
 
@@ -152,9 +152,8 @@ export default function CameraScreen() {
               <View style={styles.captureButtonInner} />
             </Pressable>
             
-            <View style={styles.placeholder} />
           </View>
-        </SafeAreaView>
+        </View>
       </CameraView>
     </View>
   );

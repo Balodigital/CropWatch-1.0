@@ -1,14 +1,13 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { useTranslation } from 'react-i18next';
 
 export default function ErrorResultScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { error } = useLocalSearchParams<{ error: string }>();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   const handleRetry = () => {
     router.replace('/scan/camera');
@@ -19,30 +18,28 @@ export default function ErrorResultScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title={t('result.analysis_error_title')} />
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.error + '20' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.error50 }]}>
           <Text style={styles.icon}>❌</Text>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>
-          Analysis Failed
+        <Text style={[styles.title, { color: tokens.colors.text }]}>
+          {t('result.analysis_failed')}
         </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          {error || 'Something went wrong while analyzing your scan.'}
+        <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
+          {error || t('result.generic_error')}
         </Text>
 
-        <View style={[styles.errorCard, { backgroundColor: colors.error + '10' }]}>
+        <View style={[styles.errorCard, { backgroundColor: tokens.colors.error50 }]}>
           <Text style={styles.errorIcon}>💡</Text>
           <View style={styles.errorContent}>
-            <Text style={[styles.errorTitle, { color: colors.text }]}>
-              Try these tips:
+            <Text style={[styles.errorTitle, { color: tokens.colors.text }]}>
+              {t('result.try_tips')}
             </Text>
-            <Text style={[styles.errorText, { color: colors.textSecondary }]}>
-              • Take a clearer photo with good lighting{'\n'}
-              • Ensure the leaf is in focus{'\n'}
-              • Include both healthy and affected areas{'\n'}
-              • Add a description of what you see
+            <Text style={[styles.errorText, { color: tokens.colors.textSecondary }]}>
+              {t('result.error_tips')}
             </Text>
           </View>
         </View>
@@ -50,41 +47,42 @@ export default function ErrorResultScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          style={[styles.retryButton, { backgroundColor: tokens.colors.primary500 }]}
           onPress={handleRetry}
         >
-          <Text style={styles.retryButtonText}>Try Again</Text>
+          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.homeButton, { borderColor: colors.primary }]}
+          style={[styles.homeButton, { borderColor: tokens.colors.primary500 }]}
           onPress={handleGoHome}
         >
-          <Text style={[styles.homeButtonText, { color: colors.primary }]}>
-            Go to Home
+          <Text style={[styles.homeButtonText, { color: tokens.colors.primary500 }]}>
+            {t('common.go_home')}
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: tokens.spacing.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconContainer: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: tokens.radius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: tokens.spacing.xl,
   },
   icon: {
     fontSize: 48,
@@ -92,24 +90,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.xs,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: tokens.spacing.xxl,
     lineHeight: 24,
   },
   errorCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     width: '100%',
   },
   errorIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   errorContent: {
     flex: 1,
@@ -117,19 +115,20 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.sm,
   },
   errorText: {
     fontSize: 13,
     lineHeight: 22,
   },
   footer: {
-    padding: 16,
-    gap: 12,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
+    gap: tokens.spacing.md,
   },
   retryButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   retryButtonText: {
@@ -138,8 +137,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   homeButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md - 2,
+    borderRadius: tokens.radius.md,
     borderWidth: 2,
     alignItems: 'center',
   },

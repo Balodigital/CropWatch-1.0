@@ -7,10 +7,14 @@ import { OfflineStorage } from '@/lib/offline';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '@/context/AuthContext';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { Avatar } from '@/components/profile/Avatar';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { user, profile } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -27,22 +31,35 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      <AppHeader
+        title="CropWatch"
+        showBack={false}
+        leftAction={
+          <Pressable onPress={() => router.push('/profile')}>
+            <Avatar 
+              uri={profile?.avatar_url || user?.user_metadata?.avatar_url} 
+              size={32} 
+            />
+          </Pressable>
+        }
+      />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.heroSection}>
         <Card style={[styles.heroCard, { backgroundColor: tokens.colors.primary500 }]} elevation="level2">
           <MaterialIcons name="eco" size={48} color={tokens.colors.surface} style={{ marginBottom: tokens.spacing.sm }} />
           <Text style={[tokens.typography.heading, { color: tokens.colors.surface, textAlign: 'center', marginBottom: tokens.spacing.xs }]}>
-            {t('welcome')}
+            {t('dashboard.welcome')}
           </Text>
           <Text style={[tokens.typography.body, { color: tokens.colors.primary100, textAlign: 'center', marginBottom: tokens.spacing.lg }]}>
-            Identify crop diseases early and protect your harvest.
+            {t('dashboard.hero_desc')}
           </Text>
           <Button 
-            title={t('scan_leaf')} 
+            title={t('dashboard.scan_leaf')} 
             onPress={handleStartScan}
             variant="secondary"
             size="large"
@@ -57,10 +74,10 @@ export default function HomeScreen() {
           <MaterialIcons name="sync-problem" size={32} color={tokens.colors.warning500} style={{ marginRight: tokens.spacing.md }} />
           <View style={styles.pendingContent}>
             <Text style={[tokens.typography.title, { color: tokens.colors.warning500 }]}>
-              {pendingCount} pending scan{pendingCount > 1 ? 's' : ''}
+              {pendingCount} {pendingCount > 1 ? t('dashboard.pending_scans') : t('dashboard.pending_scan')}
             </Text>
             <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary }]}>
-              Will sync automatically when back online.
+              {t('dashboard.sync_offline')}
             </Text>
           </View>
         </Card>
@@ -68,31 +85,31 @@ export default function HomeScreen() {
 
       <View style={styles.quickActions}>
         <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
-          Quick Actions
+          {t('dashboard.quick_actions')}
         </Text>
         <View style={styles.actionsGrid}>
           <QuickActionCard
             icon="camera-alt"
-            title="Scan Leaf"
-            description="Take a photo"
+            title={t('dashboard.scan_leaf')}
+            description={t('dashboard.take_photo')}
             onPress={handleStartScan}
           />
           <QuickActionCard
             icon="library-books"
-            title="Crop Library"
-            description="Learn about crops"
+            title={t('tabs.library')}
+            description={t('dashboard.learn_crops')}
             onPress={() => router.push('/library')}
           />
           <QuickActionCard
             icon="history"
-            title="History"
-            description="Past diagnoses"
+            title={t('tabs.history')}
+            description={t('dashboard.past_diagnoses')}
             onPress={() => router.push('/history')}
           />
           <QuickActionCard
             icon="lightbulb"
-            title="Tips"
-            description="Farming advice"
+            title={t('dashboard.tips')}
+            description={t('dashboard.farming_advice')}
             onPress={() => {}}
           />
         </View>
@@ -100,21 +117,22 @@ export default function HomeScreen() {
 
       <View style={styles.tipsSection}>
         <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
-          {t('prevention')}
+          {t('dashboard.tips_title')}
         </Text>
         <Card style={styles.tipCard} elevation="level1">
           <MaterialIcons name="healing" size={32} color={tokens.colors.success500} style={{ marginRight: tokens.spacing.md }} />
           <View style={styles.tipContent}>
             <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.xs }]}>
-              Early Detection Matters
+              {t('dashboard.early_detection')}
             </Text>
             <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary }]}>
-              Regular leaf scanning can prevent up to 80% of crop losses in the early stages of disease.
+              {t('dashboard.early_detection_desc')}
             </Text>
           </View>
         </Card>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -156,6 +174,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: tokens.colors.background,
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
     padding: tokens.spacing.lg,

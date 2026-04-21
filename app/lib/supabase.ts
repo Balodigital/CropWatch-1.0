@@ -40,15 +40,27 @@ export interface Crop {
   name: string;
   dataset_context: string;
   image?: string;
+  asset?: any;
 }
 
+export const CROP_IMAGES: Record<string, any> = {
+  tomato: require('@/assets/images/crops/tomato.png'),
+  cassava: require('@/assets/images/crops/cassava.png'),
+  maize: require('@/assets/images/crops/maize.png'),
+  pepper: require('@/assets/images/crops/pepper.png'),
+  rice: require('@/assets/images/crops/rice.png'),
+  yam: require('@/assets/images/crops/yam.png'),
+  cowpea: require('@/assets/images/crops/cowpea.png'),
+  cocoa: require('@/assets/images/crops/cocoa.png'),
+};
+
 export const CROPS_DATA: Crop[] = [
-  { id: 1, name: 'Tomato', dataset_context: 'tomato', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 2, name: 'Cassava', dataset_context: 'cassava', image: 'https://images.unsplash.com/photo-1621464759391-77218327299a?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 3, name: 'Maize', dataset_context: 'maize', image: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 4, name: 'Pepper', dataset_context: 'pepper', image: 'https://images.unsplash.com/photo-1563201481-2d7448375eeb?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 5, name: 'Rice', dataset_context: 'rice', image: 'https://images.unsplash.com/photo-1536305030588-15dc3f67a3b9?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 6, name: 'Yam', dataset_context: 'yam', image: 'https://images.unsplash.com/photo-1594282486512-ad58f6c38221?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 7, name: 'Cowpea', dataset_context: 'cowpea', image: 'https://images.unsplash.com/photo-1551460417-ee18510227aa?q=80&w=400&h=400&auto=format&fit=crop' },
-  { id: 8, name: 'Cocoa', dataset_context: 'cocoa', image: 'https://images.unsplash.com/photo-1599591037488-816999335889?q=80&w=400&h=400&auto=format&fit=crop' },
+  { id: 1, name: 'Tomato', dataset_context: 'tomato', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.tomato },
+  { id: 2, name: 'Cassava', dataset_context: 'cassava', image: 'https://images.unsplash.com/photo-1621464759391-77218327299a?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.cassava },
+  { id: 3, name: 'Maize', dataset_context: 'maize', image: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.maize },
+  { id: 4, name: 'Pepper', dataset_context: 'pepper', image: 'https://images.unsplash.com/photo-1563201481-2d7448375eeb?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.pepper },
+  { id: 5, name: 'Rice', dataset_context: 'rice', image: 'https://images.unsplash.com/photo-1536305030588-15dc3f67a3b9?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.rice },
+  { id: 6, name: 'Yam', dataset_context: 'yam', image: 'https://images.unsplash.com/photo-1594282486512-ad58f6c38221?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.yam },
+  { id: 7, name: 'Cowpea', dataset_context: 'cowpea', image: 'https://images.unsplash.com/photo-1551460417-ee18510227aa?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.cowpea },
+  { id: 8, name: 'Cocoa', dataset_context: 'cocoa', image: 'https://images.unsplash.com/photo-1599591037488-816999335889?q=80&w=400&h=400&auto=format&fit=crop', asset: CROP_IMAGES.cocoa },
 ];

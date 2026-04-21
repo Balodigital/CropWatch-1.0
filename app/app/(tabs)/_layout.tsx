@@ -46,11 +46,12 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.tabIconSelected,
-        tabBarInactiveTintColor: colors.tabIconDefault,
+        headerShown: false,
+        tabBarActiveTintColor: tokens.colors.primary500,
+        tabBarInactiveTintColor: tokens.colors.neutral400,
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.background,
+          backgroundColor: tokens.colors.surface,
+          borderTopColor: tokens.colors.border,
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
@@ -59,23 +60,13 @@ export default function TabLayout() {
           fontSize: 12,
           fontWeight: '500',
         },
-        headerStyle: {
-          backgroundColor: colors.primary,
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: '600',
-        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: t('scan_leaf'),
-          headerTitle: 'CropWatch',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => <TabIcon icon="home" />,
-          headerLeft: () => <HeaderAvatar />,
-          headerTitleAlign: 'center',
         }}
       />
       <Tabs.Screen
@@ -83,17 +74,13 @@ export default function TabLayout() {
         options={{
           title: 'Library',
           tabBarIcon: ({ color }) => <TabIcon icon="library" />,
-          headerLeft: () => <HeaderAvatar />,
-          headerTitleAlign: 'center',
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: t('history'),
+          title: t('tabs.history'),
           tabBarIcon: ({ color }) => <TabIcon icon="history" />,
-          headerLeft: () => <HeaderAvatar />,
-          headerTitleAlign: 'center',
         }}
       />
       <Tabs.Screen

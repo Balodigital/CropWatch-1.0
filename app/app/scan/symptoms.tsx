@@ -11,9 +11,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { CROP_IMAGES } from '@/lib/supabase';
+import { Image } from 'react-native';
 
 export default function SymptomsScreen() {
   const router = useRouter();
@@ -22,8 +23,6 @@ export default function SymptomsScreen() {
     cropType: string;
   }>();
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,18 +48,12 @@ export default function SymptomsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title={t('scan.symptoms')} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={[styles.backButton, { color: colors.text }]}>Back</Text>
-          </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Symptoms</Text>
-          <View style={{ width: 60 }} />
-        </View>
 
         <ScrollView
           style={styles.scrollView}
@@ -68,32 +61,36 @@ export default function SymptomsScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.cropBadge, { backgroundColor: colors.primaryLight + '20' }]}>
-            <Text style={styles.cropIcon}>
-              {getCropIcon(cropType || '')}
-            </Text>
-            <Text style={[styles.cropName, { color: colors.primary }]}>
-              {cropType?.charAt(0).toUpperCase() + cropType?.slice(1)} Selected
+          <View style={[styles.cropBadge, { backgroundColor: tokens.colors.primary50 }]}>
+            <View style={styles.imageContainer}>
+              <Image 
+                source={CROP_IMAGES[cropType || ''] || { uri: 'https://via.placeholder.com/40' }} 
+                style={styles.cropImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={[styles.cropName, { color: tokens.colors.primary500 }]}>
+              {cropType?.charAt(0).toUpperCase() + cropType?.slice(1)} {t('common.confirm')}
             </Text>
           </View>
 
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t('describe_symptom')}
+          <Text style={[styles.label, { color: tokens.colors.text }]}>
+            {t('scan.describe_symptom')}
           </Text>
 
           <View
             style={[
               styles.inputContainer,
               {
-                backgroundColor: colors.surface,
-                borderColor: !isValid ? colors.error : colors.textSecondary + '30',
+                backgroundColor: tokens.colors.surface,
+                borderColor: !isValid ? tokens.colors.error500 : tokens.colors.border,
               },
             ]}
           >
             <TextInput
-              style={[styles.input, { color: colors.text }]}
-              placeholder="e.g., leaves are turning yellow with brown spots..."
-              placeholderTextColor={colors.textSecondary}
+              style={[styles.input, { color: tokens.colors.text }]}
+              placeholder={t('scan.placeholder')}
+              placeholderTextColor={tokens.colors.textSecondary}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -109,42 +106,42 @@ export default function SymptomsScreen() {
                 styles.countText,
                 {
                   color: !isValid
-                    ? colors.error
+                    ? tokens.colors.error500
                     : characterCount >= 450
-                    ? colors.warning
-                    : colors.textSecondary,
+                    ? tokens.colors.warning500
+                    : tokens.colors.textSecondary,
                 },
               ]}
             >
               {characterCount}/500
             </Text>
             {!isValid && (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                Description must be at least 5 characters
+              <Text style={[styles.errorText, { color: tokens.colors.error500 }]}>
+                {t('scan.char_limit_error')}
               </Text>
             )}
           </View>
 
           <View style={styles.tipsContainer}>
-            <Text style={[styles.tipsTitle, { color: colors.text }]}>
-              Tips for better diagnosis:
+            <Text style={[styles.tipsTitle, { color: tokens.colors.text }]}>
+              {t('scan.tips_title')}
             </Text>
             <View style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
-              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
-                Describe the color changes you see
+              <Text style={[styles.tipText, { color: tokens.colors.textSecondary }]}>
+                {t('scan.tip_colors')}
               </Text>
             </View>
             <View style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
-              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
-                Mention which parts are affected (leaves, stems, fruit)
+              <Text style={[styles.tipText, { color: tokens.colors.textSecondary }]}>
+                {t('scan.tip_parts')}
               </Text>
             </View>
             <View style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
-              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
-                Note when you first noticed the problem
+              <Text style={[styles.tipText, { color: tokens.colors.textSecondary }]}>
+                {t('scan.tip_time')}
               </Text>
             </View>
           </View>
@@ -153,8 +150,8 @@ export default function SymptomsScreen() {
             style={styles.skipButton}
             onPress={skipDescription}
           >
-            <Text style={[styles.skipText, { color: colors.textSecondary }]}>
-              Skip description
+            <Text style={[styles.skipText, { color: tokens.colors.textSecondary }]}>
+              {t('scan.skip_desc')}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -164,7 +161,7 @@ export default function SymptomsScreen() {
             style={[
               styles.analyzeButton,
               {
-                backgroundColor: colors.primary,
+                backgroundColor: tokens.colors.primary500,
                 opacity: isSubmitting ? 0.7 : 1,
               },
             ]}
@@ -172,68 +169,51 @@ export default function SymptomsScreen() {
             disabled={isSubmitting}
           >
             <Text style={styles.analyzeButtonText}>
-              {isSubmitting ? 'Preparing...' : 'Analyze'}
+              {isSubmitting ? t('scan.preparing') : t('scan.analyze_btn')}
             </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-function getCropIcon(cropType: string): string {
-  const icons: Record<string, string> = {
-    tomato: '🍅',
-    cassava: '🫚',
-    maize: '🌽',
-    pepper: '🌶️',
-    rice: '🍚',
-    yam: '🍠',
-    cowpea: '🫘',
-    cocoa: '🍫',
-  };
-  return icons[cropType.toLowerCase()] || '🌱';
-}
+// getCropIcon removed in favor of centralized images
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   keyboardView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   cropBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 24,
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.xs,
+    borderRadius: tokens.radius.full,
+    marginBottom: tokens.spacing.lg,
   },
-  cropIcon: {
-    fontSize: 24,
-    marginRight: 8,
+  imageContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: tokens.radius.full,
+    marginRight: tokens.spacing.xs,
+    overflow: 'hidden',
+  },
+  cropImage: {
+    width: '100%',
+    height: '100%',
   },
   cropName: {
     fontSize: 14,
@@ -242,23 +222,23 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.md,
   },
   inputContainer: {
-    borderRadius: 12,
+    borderRadius: tokens.radius.md,
     borderWidth: 1,
     overflow: 'hidden',
   },
   input: {
-    padding: 16,
+    padding: tokens.spacing.md,
     fontSize: 16,
     minHeight: 150,
   },
   characterCount: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
-    marginBottom: 24,
+    marginTop: tokens.spacing.xs,
+    marginBottom: tokens.spacing.lg,
   },
   countText: {
     fontSize: 12,
@@ -267,20 +247,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   tipsContainer: {
-    marginBottom: 24,
+    marginBottom: tokens.spacing.lg,
   },
   tipsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: tokens.spacing.md,
   },
   tipItem: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.xs,
   },
   tipBullet: {
     fontSize: 14,
-    marginRight: 8,
+    marginRight: tokens.spacing.xs,
   },
   tipText: {
     flex: 1,
@@ -289,17 +269,18 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     alignSelf: 'center',
-    padding: 12,
+    padding: tokens.spacing.md,
   },
   skipText: {
     fontSize: 14,
   },
   footer: {
-    padding: 16,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   analyzeButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   analyzeButtonText: {

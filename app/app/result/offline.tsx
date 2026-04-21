@@ -1,8 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function OfflineResultScreen() {
   const router = useRouter();
@@ -10,40 +9,39 @@ export default function OfflineResultScreen() {
     pendingScanId: string;
     cropType: string;
   }>();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title="Offline Mode" />
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.warning + '20' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.warning50 }]}>
           <Text style={styles.icon}>📡</Text>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>
+        <Text style={[styles.title, { color: tokens.colors.text }]}>
           Saved for Later
         </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
           Your scan has been saved and will be processed automatically when
           you're back online.
         </Text>
 
-        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
+        <View style={[styles.infoCard, { backgroundColor: tokens.colors.surface }]}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Status</Text>
-            <Text style={[styles.infoValue, { color: colors.warning }]}>
+            <Text style={[styles.infoValue, { color: tokens.colors.warning500 }]}>
               Pending
             </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Crop</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
+            <Text style={[styles.infoValue, { color: tokens.colors.text }]}>
               {cropType?.charAt(0).toUpperCase() + cropType?.slice(1)}
             </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Scan ID</Text>
-            <Text style={[styles.infoValue, { color: colors.textSecondary }]}>
+            <Text style={[styles.infoValue, { color: tokens.colors.textSecondary }]}>
               {pendingScanId?.slice(0, 12)}...
             </Text>
           </View>
@@ -51,7 +49,7 @@ export default function OfflineResultScreen() {
 
         <View style={styles.tips}>
           <Text style={styles.tipIcon}>💡</Text>
-          <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+          <Text style={[styles.tipText, { color: tokens.colors.textSecondary }]}>
             Make sure to open the app when you have internet connection to sync
             your pending scans.
           </Text>
@@ -60,33 +58,34 @@ export default function OfflineResultScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.primary }]}
+          style={[styles.button, { backgroundColor: tokens.colors.primary500 }]}
           onPress={() => router.replace('/(tabs)')}
         >
           <Text style={styles.buttonText}>Go to Home</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: tokens.spacing.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconContainer: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: tokens.radius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: tokens.spacing.xl,
   },
   icon: {
     fontSize: 48,
@@ -94,31 +93,32 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.xs,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: tokens.spacing.xxl,
     lineHeight: 24,
   },
   infoCard: {
     width: '100%',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.spacing.xl,
+    ...tokens.elevation.level1,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: tokens.spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: tokens.colors.border,
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: tokens.colors.textSecondary,
   },
   infoValue: {
     fontSize: 14,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
   tips: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    padding: 16,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 12,
+    padding: tokens.spacing.md,
+    backgroundColor: tokens.colors.primary50,
+    borderRadius: tokens.radius.md,
   },
   tipIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: tokens.spacing.md,
   },
   tipText: {
     flex: 1,
@@ -141,11 +141,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   footer: {
-    padding: 16,
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
   },
   button: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: tokens.spacing.md,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   buttonText: {

@@ -18,6 +18,7 @@ import { ToggleItem } from '@/components/profile/ToggleItem';
 import { Avatar } from '@/components/profile/Avatar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -46,11 +47,13 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      <AppHeader title={t('tabs.settings')} showBack={false} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
       {/* Profile Header Section */}
       <View style={styles.profileHeaderCard}>
         <SettingsSection>
@@ -78,81 +81,81 @@ export default function SettingsScreen() {
       </View>
 
       {/* Appearance & Notifications */}
-      <SettingsSection title="Preferences">
+      <SettingsSection title={t('settings.preferences')}>
         <ToggleItem
           icon="dark-mode"
-          title="Dark Mode"
+          title={t('settings.dark_mode')}
           value={darkMode}
           onValueChange={setDarkMode}
         />
         <ToggleItem
           icon="notifications-none"
-          title="Notifications"
+          title={t('settings.notifications')}
           value={notifications}
           onValueChange={setNotifications}
         />
       </SettingsSection>
 
       {/* Security Options */}
-      <SettingsSection title="Security Options">
+      <SettingsSection title={t('settings.security')}>
         <ToggleItem
           icon="fingerprint"
-          title="Biometric Lock"
-          subtitle="Fingerprint or Face Unlock"
+          title={t('settings.biometric_lock')}
+          subtitle={t('settings.biometric_subtitle')}
           value={biometricLock}
           onValueChange={setBiometricLock}
         />
         <SettingsItem
           icon="lock-outline"
-          title="Change Password"
+          title={t('settings.change_password')}
           onPress={() => router.push('/profile/change-password')}
         />
       </SettingsSection>
 
       {/* Privacy Settings */}
-      <SettingsSection title="Privacy Settings">
+      <SettingsSection title={t('settings.privacy')}>
         <SettingsItem
           icon="security"
-          title="App Permissions"
-          subtitle="Manage camera, storage, etc."
+          title={t('settings.permissions')}
+          subtitle={t('settings.permissions_subtitle')}
           onPress={() => router.push('/profile/permissions')}
         />
       </SettingsSection>
 
       {/* Regional Section */}
-      <SettingsSection title="Regional">
+      <SettingsSection title={t('settings.regional')}>
         <SettingsItem
           icon="language"
-          title="Language"
+          title={t('settings.language')}
           value={currentLanguage === 'en' ? 'English' : 'Pidgin'}
           onPress={() => router.push('/profile/language')}
         />
       </SettingsSection>
 
       {/* Help & Support */}
-      <SettingsSection title="Help & Support">
+      <SettingsSection title={t('settings.support')}>
         <SettingsItem
           icon="help-outline"
-          title="FAQ"
+          title={t('settings.faq')}
           onPress={() => Linking.openURL('https://cropwatch.app/faq')}
         />
         <SettingsItem
           icon="headset-mic"
-          title="Contact Support"
+          title={t('settings.contact')}
           onPress={() => Linking.openURL('mailto:support@cropwatch.app')}
         />
         <SettingsItem
           icon="description"
-          title="Terms & Privacy Policy"
+          title={t('settings.terms')}
           onPress={() => Linking.openURL('https://cropwatch.app/privacy')}
         />
       </SettingsSection>
 
       {/* Account Control */}
-      <SettingsSection title="Account Control">
+      <SettingsSection title={t('settings.account_control')}>
         <SettingsItem
           icon="devices"
-          title="Sign out of all devices"
+          title={t('settings.sign_out_all')}
           onPress={() => setSignOutAllModalVisible(true)}
         />
       </SettingsSection>
@@ -161,7 +164,7 @@ export default function SettingsScreen() {
       <SettingsSection>
         <SettingsItem
           icon="logout"
-          title="Logout"
+          title={t('common.logout')}
           onPress={() => setLogoutModalVisible(true)}
           destructive
           showChevron={false}
@@ -169,9 +172,9 @@ export default function SettingsScreen() {
       </SettingsSection>
 
       <View style={styles.footer}>
-        <Text style={styles.versionText}>App ver 2.0.1</Text>
+        <Text style={styles.versionText}>{t('settings.version')}</Text>
         <Pressable onPress={() => Alert.alert('Update', 'You are using the latest version.')}>
-          <Text style={[styles.footerText, { color: tokens.colors.primary500 }]}>Check for updates</Text>
+          <Text style={[styles.footerText, { color: tokens.colors.primary500 }]}>{t('settings.check_updates')}</Text>
         </Pressable>
         <Text style={styles.footerText}>
           Made with 💚 for Nigerian Farmers
@@ -181,9 +184,9 @@ export default function SettingsScreen() {
       {/* Confirmation Modals */}
       <ConfirmationModal
         visible={logoutModalVisible}
-        title="Confirm Logout"
-        message="Are you sure you want to log out of your account?"
-        confirmLabel="Logout"
+        title={t('modals.logout_title')}
+        message={t('modals.logout_message')}
+        confirmLabel={t('common.logout')}
         onConfirm={handleLogout}
         onClose={() => setLogoutModalVisible(false)}
         isDestructive
@@ -191,13 +194,14 @@ export default function SettingsScreen() {
 
       <ConfirmationModal
         visible={signOutAllModalVisible}
-        title="Sign Out Everywhere"
-        message="This will log you out of all devices currently using this account."
-        confirmLabel="Sign Out All"
+        title={t('modals.sign_out_all_title')}
+        message={t('modals.sign_out_all_message')}
+        confirmLabel={t('settings.sign_out_all')}
         onConfirm={handleSignOutAll}
         onClose={() => setSignOutAllModalVisible(false)}
       />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -205,6 +209,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: tokens.colors.background,
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
     padding: tokens.spacing.lg,

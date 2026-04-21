@@ -2,21 +2,18 @@ import { useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, Animated, Easing } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { tokens } from '@/constants/tokens';
 import { submitDiagnosis } from '@/lib/api';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { image, cropType, description } = useLocalSearchParams<{
     image: string;
     cropType: string;
     description?: string;
   }>();
-  const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -89,7 +86,7 @@ export default function AnalyzingScreen() {
         router.replace({
           pathname: '/result/error',
           params: {
-            error: result.error || 'Unknown error occurred',
+            error: result.error || t('common.error'),
           },
         });
       }
@@ -98,7 +95,7 @@ export default function AnalyzingScreen() {
       router.replace({
         pathname: '/result/error',
         params: {
-          error: 'Failed to analyze. Please try again.',
+            error: t('result.analysis_error'),
         },
       });
     }
@@ -110,14 +107,15 @@ export default function AnalyzingScreen() {
   });
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <AppHeader title={t('scan.analyzing')} />
       <View style={styles.content}>
         <View style={styles.animationContainer}>
           <Animated.View
             style={[
               styles.outerRing,
               {
-                backgroundColor: colors.primary + '20',
+                backgroundColor: tokens.colors.primary50,
                 transform: [{ scale: pulseAnim }],
               },
             ]}
@@ -126,43 +124,40 @@ export default function AnalyzingScreen() {
             style={[
               styles.innerRing,
               {
-                backgroundColor: colors.primary + '40',
+                backgroundColor: tokens.colors.primary50,
                 transform: [{ rotate }],
               },
             ]}
           />
-          <View style={[styles.centerIcon, { backgroundColor: colors.primary }]}>
+          <View style={[styles.centerIcon, { backgroundColor: tokens.colors.primary500 }]}>
             <Text style={styles.leafIcon}>🍃</Text>
           </View>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>Analyzing...</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Our AI is examining your crop leaf
+        <Text style={[styles.title, { color: tokens.colors.text }]}>{t('analyzing.status')}</Text>
+        <Text style={[styles.subtitle, { color: tokens.colors.textSecondary }]}>
+          {t('analyzing.desc')}
         </Text>
 
         <View style={styles.stepsContainer}>
           <StepItem
             step="1"
-            text="Processing image"
+            text={t('analyzing.step_1')}
             isActive={true}
-            colors={colors}
           />
           <StepItem
             step="2"
-            text="Identifying symptoms"
+            text={t('analyzing.step_2')}
             isActive={true}
-            colors={colors}
           />
           <StepItem
             step="3"
-            text="Matching diseases"
+            text={t('analyzing.step_3')}
             isActive={false}
-            colors={colors}
           />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -170,12 +165,10 @@ function StepItem({
   step,
   text,
   isActive,
-  colors,
 }: {
   step: string;
   text: string;
   isActive: boolean;
-  colors: typeof Colors.light;
 }) {
   return (
     <View style={styles.stepItem}>
@@ -183,14 +176,14 @@ function StepItem({
         style={[
           styles.stepCircle,
           {
-            backgroundColor: isActive ? colors.primary : colors.textSecondary + '30',
+            backgroundColor: isActive ? tokens.colors.primary500 : tokens.colors.neutral200,
           },
         ]}
       >
         <Text
           style={[
             styles.stepText,
-            { color: isActive ? '#fff' : colors.textSecondary },
+            { color: isActive ? tokens.colors.surface : tokens.colors.textSecondary },
           ]}
         >
           {step}
@@ -199,7 +192,7 @@ function StepItem({
       <Text
         style={[
           styles.stepLabel,
-          { color: isActive ? colors.text : colors.textSecondary },
+          { color: isActive ? tokens.colors.text : tokens.colors.textSecondary },
         ]}
       >
         {text}
@@ -211,25 +204,26 @@ function StepItem({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: tokens.colors.background,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: tokens.spacing.xl,
   },
   animationContainer: {
     width: 200,
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: tokens.spacing.xl,
   },
   outerRing: {
     position: 'absolute',
     width: 200,
     height: 200,
-    borderRadius: 100,
+    borderRadius: tokens.radius.full,
   },
   innerRing: {
     position: 'absolute',
@@ -238,14 +232,15 @@ const styles = StyleSheet.create({
     borderRadius: 75,
     borderWidth: 4,
     borderColor: 'transparent',
-    borderTopColor: '#2c6a4f',
+    borderTopColor: tokens.colors.primary600,
   },
   centerIcon: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: tokens.radius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    ...tokens.elevation.level2,
   },
   leafIcon: {
     fontSize: 40,
@@ -253,15 +248,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.xs,
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 48,
+    marginBottom: tokens.spacing.xxl,
   },
   stepsContainer: {
     width: '100%',
-    gap: 16,
+    gap: tokens.spacing.md,
   },
   stepItem: {
     flexDirection: 'row',
@@ -273,7 +268,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: tokens.spacing.sm,
   },
   stepText: {
     fontSize: 14,

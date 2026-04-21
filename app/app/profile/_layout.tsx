@@ -5,14 +5,7 @@ export default function ProfileLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: tokens.colors.primary500,
-        },
-        headerTintColor: tokens.colors.surface,
-        headerTitleStyle: {
-          fontWeight: '600',
-        },
-        headerBackTitleVisible: false,
+        headerShown: false,
       }}
     >
       <Stack.Screen

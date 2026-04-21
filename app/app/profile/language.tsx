@@ -3,29 +3,43 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { MaterialIcons } from '@expo/vector-icons';
-import { OfflineStorage } from '@/lib/offline';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function LanguageSelectionScreen() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
 
   const languages = [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    { code: 'pcm', name: 'Nigerian Pidgin', nativeName: 'Pidgin' },
+    { code: 'en', name: t('settings.lang_en'), nativeName: 'English' },
+    { code: 'pcm', name: t('settings.lang_pcm'), nativeName: 'Pidgin' },
   ];
 
   const handleLanguageSelect = async (code: string) => {
-    await i18n.changeLanguage(code);
-    await OfflineStorage.saveUserPreferences({
-      language: code,
-      hasCompletedOnboarding: true,
-    });
+    try {
+      await i18n.changeLanguage(code);
+      await AsyncStorage.setItem('@cropwatch_language', code);
+      
+      // Update Supabase profile if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ language_pref: code })
+          .eq('id', user.id);
+      }
+    } catch (error) {
+      console.error('Error changing language', error);
+    }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
+      <AppHeader title={t('settings.language')} />
+      <ScrollView contentContainerStyle={styles.contentContainer}>
       <Text style={[tokens.typography.body, styles.description]}>
-        Choose your preferred language for the CropWatch app.
+        {t('settings.lang_description')}
       </Text>
 
       <View style={styles.list}>
@@ -49,7 +63,8 @@ export default function LanguageSelectionScreen() {
           </Pressable>
         ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
