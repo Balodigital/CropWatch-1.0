@@ -29,16 +29,18 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: tokens.colors.primary500,
         tabBarInactiveTintColor: tokens.colors.neutral500,
+        tabBarShowLabel: true, // Ensure labels are shown
         tabBarStyle: {
           backgroundColor: tokens.colors.surface,
           borderTopColor: tokens.colors.border,
-          height: 65,
-          paddingBottom: 10,
+          height: 85,
+          paddingBottom: 20,
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontSize: 12,
+          fontWeight: '500',
+          marginTop: 2,
         },
       }}
     >
@@ -47,26 +49,32 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon name={focused ? "home" : "home"} color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="library"
-        options={{
-          title: 'Library',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="menu-book" color={color} focused={focused} />
+            <TabIcon name="home" color={color} focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'Chat',
+          title: 'History',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="history" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: 'Chats',
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="lock" color={color} focused={focused} isPremium />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="library"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
@@ -100,10 +108,12 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.neutral100,
     paddingHorizontal: 4,
     paddingVertical: 1,
-    borderRadius: 2,
-    marginTop: 2,
+    borderRadius: 4,
     position: 'absolute',
-    bottom: -16,
+    top: -4,
+    right: -24,
+    borderWidth: 1,
+    borderColor: tokens.colors.surface,
   },
   premiumText: {
     fontSize: 7,

@@ -73,7 +73,7 @@ export default function HomeScreen() {
               description="Take a photo of a crop leaf"
               bgToken="success95"
               iconColor={tokens.colors.primary500}
-              arrowBg={tokens.colors.success95}
+              arrowBg={tokens.colors.success80}
               onPress={handleStartScan}
             />
             <QuickActionCard
@@ -82,17 +82,19 @@ export default function HomeScreen() {
               description="Learn about different crops"
               bgToken="warning95"
               iconColor={tokens.colors.warning500}
-              arrowBg={tokens.colors.warning95}
+              arrowBg={tokens.colors.warning80}
+              arrowIconColor={tokens.colors.warning500}
               onPress={() => router.push('/library')}
             />
             <QuickActionCard
               icon="lock-outline"
               title="Chat with Expert"
-              description="Get personalized advice"
+              description={"Get personalized\nadvice"}
               isPremium
               bgToken="accent95"
               iconColor={tokens.colors.accent50}
-              arrowBg={tokens.colors.accent95}
+              arrowBg={tokens.colors.accent80}
+              arrowIconColor={tokens.colors.accent700}
               onPress={() => {}}
             />
             <QuickActionCard
@@ -100,8 +102,9 @@ export default function HomeScreen() {
               title="Tips"
               description="Get helpful farming advice"
               bgToken="tertiary95"
-              iconColor={tokens.colors.tertiary50}
-              arrowBg={tokens.colors.tertiary95}
+              iconColor={tokens.colors.tertiary700}
+              arrowBg={tokens.colors.tertiary80}
+              arrowIconColor={tokens.colors.tertiary700}
               onPress={() => {}}
             />
           </View>
@@ -109,10 +112,9 @@ export default function HomeScreen() {
 
         <View style={styles.insightSection}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
-            Smart Insight
+            Weather Based Advice
           </Text>
           <InsightCard 
-            label="Smart Insight"
             text="Maize crops are more prone to leaf blight during humid conditions."
             highlight="Monitor closely this week."
             onPress={() => {}}
@@ -160,21 +162,22 @@ export default function HomeScreen() {
   );
 }
 
-function InsightCard({ label, text, highlight, onPress }: { label: string, text: string, highlight?: string, onPress: () => void }) {
+function InsightCard({ text, highlight, onPress }: { text: string, highlight?: string, onPress: () => void }) {
   return (
     <Pressable onPress={onPress}>
       <Card style={[styles.insightCard, { backgroundColor: tokens.colors.secondary95 }]} elevation="level1">
         <View style={[styles.insightIconContainer, { backgroundColor: tokens.colors.surface }]}>
-          <MaterialIcons name="eco" size={24} color={tokens.colors.primary500} />
+          <MaterialIcons name="info" size={24} color={tokens.colors.primary500} />
         </View>
         <View style={styles.insightTextContainer}>
-          <Text style={[styles.insightLabel, { color: tokens.colors.primary500 }]}>{label}</Text>
           <Text style={[styles.insightText, { color: tokens.colors.text }]}>
-            {text} {highlight && <Text style={{ fontWeight: '700' }}>{highlight}</Text>}
+            {text}
           </Text>
-        </View>
-        <View style={[styles.insightAction, { backgroundColor: tokens.colors.surface }]}>
-          <MaterialIcons name="chevron-right" size={24} color={tokens.colors.primary500} />
+          {highlight && (
+            <Text style={[styles.insightHighlight, { color: tokens.colors.primary500 }]}>
+              {highlight}
+            </Text>
+          )}
         </View>
       </Card>
     </Pressable>
@@ -188,6 +191,7 @@ function QuickActionCard({
   bgToken,
   iconColor,
   arrowBg,
+  arrowIconColor,
   isPremium,
   onPress,
 }: {
@@ -197,6 +201,7 @@ function QuickActionCard({
   bgToken: keyof typeof tokens.colors;
   iconColor: string;
   arrowBg: string;
+  arrowIconColor?: string;
   isPremium?: boolean;
   onPress: () => void;
 }) {
@@ -208,20 +213,23 @@ function QuickActionCard({
       ]}
       onPress={onPress}
     >
-      <MaterialIcons name={icon} size={32} color={iconColor} style={styles.actionIcon} />
-      <Text style={[styles.actionTitle, { color: tokens.colors.text }]}>{title}</Text>
+      <View style={styles.actionTopContent}>
+        <MaterialIcons name={icon} size={32} color={iconColor} style={styles.actionIcon} />
+        <Text style={[styles.actionTitle, { color: tokens.colors.text }]}>{title}</Text>
+        
+        {isPremium && (
+          <View style={[styles.premiumBadge, { backgroundColor: tokens.colors.surface }]}>
+            <MaterialIcons name="stars" size={12} color={tokens.colors.accent50} />
+            <Text style={[styles.premiumText, { color: tokens.colors.accent50 }]}>Premium</Text>
+          </View>
+        )}
+      </View>
       
-      {isPremium && (
-        <View style={[styles.premiumBadge, { backgroundColor: tokens.colors.neutral200 }]}>
-          <MaterialIcons name="stars" size={12} color={tokens.colors.accent50} />
-          <Text style={[styles.premiumText, { color: tokens.colors.accent50 }]}>Premium</Text>
+      <View style={styles.actionBottomRow}>
+        <Text style={[styles.actionDesc, { color: tokens.colors.textSecondary }]}>{description}</Text>
+        <View style={[styles.actionArrow, { backgroundColor: arrowBg }]}>
+          <MaterialIcons name="chevron-right" size={20} color={arrowIconColor || tokens.colors.text} />
         </View>
-      )}
-      
-      <Text style={[styles.actionDesc, { color: tokens.colors.textSecondary }]}>{description}</Text>
-      
-      <View style={[styles.actionArrow, { backgroundColor: tokens.colors.surface }]}>
-        <MaterialIcons name="chevron-right" size={20} color={tokens.colors.text} />
       </View>
     </Pressable>
   );
@@ -298,14 +306,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: tokens.spacing.md,
-    marginBottom: tokens.spacing.lg,
     borderRadius: tokens.radius.lg,
-    borderWidth: 0,
   },
   insightIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: tokens.spacing.md,
@@ -323,6 +329,12 @@ const styles = StyleSheet.create({
   insightText: {
     fontSize: 14,
     lineHeight: 20,
+    marginBottom: 2,
+  },
+  insightHighlight: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
   },
   insightAction: {
     width: 32,
@@ -333,6 +345,9 @@ const styles = StyleSheet.create({
     marginLeft: tokens.spacing.sm,
   },
   quickActionsSection: {
+    marginBottom: tokens.spacing.xl,
+  },
+  actionsSection: {
     marginBottom: tokens.spacing.xl,
   },
   sectionTitle: {
@@ -350,30 +365,36 @@ const styles = StyleSheet.create({
     width: '47.5%',
     padding: tokens.spacing.md,
     borderRadius: tokens.radius.lg,
-    minHeight: 140,
-    position: 'relative',
+    minHeight: 180,
+    justifyContent: 'space-between',
     ...tokens.elevation.level1,
+  },
+  actionTopContent: {
+    flex: 1,
   },
   actionIcon: {
     marginBottom: tokens.spacing.sm,
   },
   actionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  actionBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
   },
   actionDesc: {
     fontSize: 12,
     lineHeight: 16,
-    paddingRight: 24,
+    flex: 1,
+    marginRight: tokens.spacing.xs,
   },
   actionArrow: {
-    position: 'absolute',
-    bottom: tokens.spacing.md,
-    right: tokens.spacing.md,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
