@@ -1,95 +1,114 @@
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs } from 'expo-router';
 import React from 'react';
-import { Text, Pressable, View } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '@/constants/theme';
 import { tokens } from '@/constants/tokens';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useAuth } from '@/context/AuthContext';
-import { Avatar } from '@/components/profile/Avatar';
+import { MaterialIcons } from '@expo/vector-icons';
 
-function TabIcon({ icon }: { icon: string }) {
-  const iconMap: Record<string, string> = {
-    home: '🏠',
-    library: '📚',
-    history: '📋',
-    settings: '⚙️',
-  };
-  return <Text style={{ fontSize: 24 }}>{iconMap[icon]}</Text>;
-}
-
-function HeaderAvatar() {
-  const router = useRouter();
-  const { user, profile } = useAuth();
-  
+function TabIcon({ name, color, focused, isPremium }: { name: keyof typeof MaterialIcons.glyphMap, color: string, focused: boolean, isPremium?: boolean }) {
   return (
-    <Pressable 
-      onPress={() => router.push('/profile')}
-      style={({ pressed }) => ({
-        marginLeft: tokens.spacing.md,
-        opacity: pressed ? 0.7 : 1,
-      })}
-    >
-      <Avatar 
-        uri={profile?.avatar_url || user?.user_metadata?.avatar_url} 
-        size={32} 
-      />
-    </Pressable>
+    <View style={styles.iconContainer}>
+      <MaterialIcons name={name} size={26} color={color} />
+      {focused && <View style={[styles.activeDot, { backgroundColor: tokens.colors.primary500 }]} />}
+      {isPremium && (
+        <View style={styles.premiumBadge}>
+          <MaterialIcons name="stars" size={8} color={tokens.colors.accent50} />
+          <Text style={styles.premiumText}>Premium</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 export default function TabLayout() {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: tokens.colors.primary500,
-        tabBarInactiveTintColor: tokens.colors.neutral400,
+        tabBarInactiveTintColor: tokens.colors.neutral500,
         tabBarStyle: {
           backgroundColor: tokens.colors.surface,
           borderTopColor: tokens.colors.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 65,
+          paddingBottom: 10,
+          paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: '600',
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.home'),
-          tabBarIcon: ({ color }) => <TabIcon icon="home" />,
+          title: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? "home" : "home"} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
           title: 'Library',
-          tabBarIcon: ({ color }) => <TabIcon icon="library" />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="menu-book" color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: t('tabs.history'),
-          tabBarIcon: ({ color }) => <TabIcon icon="history" />,
+          title: 'Chat',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="lock" color={color} focused={focused} isPremium />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <TabIcon icon="settings" />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="settings" color={color} focused={focused} />
+          ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 4,
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: tokens.colors.neutral100,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 2,
+    marginTop: 2,
+    position: 'absolute',
+    bottom: -16,
+  },
+  premiumText: {
+    fontSize: 7,
+    fontWeight: '700',
+    color: tokens.colors.accent50,
+    marginLeft: 1,
+  },
+});
