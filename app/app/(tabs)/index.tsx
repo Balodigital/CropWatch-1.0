@@ -138,53 +138,6 @@ export default function HomeScreen() {
             onPress={() => {}}
           />
         </View>
-
-        <View style={styles.recentScansSection}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
-              Recent Scans
-            </Text>
-            <TouchableOpacity onPress={() => router.push('/history')}>
-              <View style={styles.viewAllBtn}>
-                <Text style={[styles.viewAllText, { color: tokens.colors.primary500 }]}>View all</Text>
-                <MaterialIcons name="chevron-right" size={20} color={tokens.colors.primary500} />
-              </View>
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scansList}>
-            <AddScanItem onPress={handleStartScan} />
-            
-            <ScanItem 
-              crop="Tomato" 
-              status="healthy" 
-              time="2 days ago" 
-              image={CROP_IMAGES.tomato} 
-              onPress={() => handleViewResult('Tomato', 'healthy')}
-            />
-            <ScanItem 
-              crop="Cassava" 
-              status="pending" 
-              time="3 days ago" 
-              image={CROP_IMAGES.cassava} 
-              onPress={() => handleViewResult('Cassava', 'pending')}
-            />
-            <ScanItem 
-              crop="Maize" 
-              status="infected" 
-              time="5 days ago" 
-              image={CROP_IMAGES.maize} 
-              onPress={() => handleViewResult('Maize', 'infected')}
-            />
-            <ScanItem 
-              crop="Pepper" 
-              status="healthy" 
-              time="6 days ago" 
-              image={CROP_IMAGES.pepper} 
-              onPress={() => handleViewResult('Pepper', 'healthy')}
-            />
-          </ScrollView>
-        </View>
       </ScrollView>
     </View>
   );
