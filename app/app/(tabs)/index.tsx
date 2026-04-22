@@ -118,26 +118,50 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View style={styles.recentCropsSection}>
-          <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
-            Your Recent Crops
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cropsList}>
-            <Pressable style={styles.addCropItem}>
-              <View style={[styles.addCropCircle, { borderColor: tokens.colors.primary500 }]}>
-                <MaterialIcons name="add" size={32} color={tokens.colors.primary500} />
+        <View style={styles.recentScansSection}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
+              Recent Scans
+            </Text>
+            <TouchableOpacity onPress={() => router.push('/history')}>
+              <View style={styles.viewAllBtn}>
+                <Text style={[styles.viewAllText, { color: tokens.colors.primary500 }]}>View all</Text>
+                <MaterialIcons name="chevron-right" size={20} color={tokens.colors.primary500} />
               </View>
-              <Text style={[styles.cropLabel, { color: tokens.colors.text }]}>Add Crop</Text>
-            </Pressable>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scansList}>
+            <AddScanItem onPress={handleStartScan} />
             
-            {['tomato', 'cassava', 'maize', 'pepper'].map((crop) => (
-              <View key={crop} style={styles.cropItem}>
-                <Image source={CROP_IMAGES[crop]} style={styles.cropImage} />
-                <Text style={[styles.cropLabel, { color: tokens.colors.text }]}>
-                  {crop.charAt(0).toUpperCase() + crop.slice(1)}
-                </Text>
-              </View>
-            ))}
+            <ScanItem 
+              crop="Tomato" 
+              status="healthy" 
+              time="2 days ago" 
+              image={CROP_IMAGES.tomato} 
+              onPress={() => {}}
+            />
+            <ScanItem 
+              crop="Cassava" 
+              status="pending" 
+              time="3 days ago" 
+              image={CROP_IMAGES.cassava} 
+              onPress={() => {}}
+            />
+            <ScanItem 
+              crop="Maize" 
+              status="infected" 
+              time="5 days ago" 
+              image={CROP_IMAGES.maize} 
+              onPress={() => {}}
+            />
+            <ScanItem 
+              crop="Pepper" 
+              status="healthy" 
+              time="6 days ago" 
+              image={CROP_IMAGES.pepper} 
+              onPress={() => {}}
+            />
           </ScrollView>
         </View>
       </ScrollView>
@@ -203,6 +227,53 @@ function PendingScansCard({ count }: { count: number }) {
         <MaterialIcons name="chevron-right" size={24} color="#CC5A33" />
       </TouchableOpacity>
     </View>
+  );
+}
+
+function ScanItem({ crop, status, time, image, onPress }: { 
+  crop: string, 
+  status: 'healthy' | 'pending' | 'infected', 
+  time: string, 
+  image: any,
+  onPress: () => void 
+}) {
+  const getStatusStyle = () => {
+    switch (status) {
+      case 'healthy': return { bg: tokens.colors.success95, text: tokens.colors.success500 };
+      case 'pending': return { bg: tokens.colors.warning95, text: tokens.colors.warning500 };
+      case 'infected': return { bg: tokens.colors.accent95, text: tokens.colors.accent700 };
+    }
+  };
+  const statusStyle = getStatusStyle();
+
+  return (
+    <TouchableOpacity style={styles.scanItemCard} onPress={onPress}>
+      <View style={[styles.scanImageContainer, { backgroundColor: tokens.colors.neutral100 }]}>
+        <Image source={image} style={styles.scanImage} />
+      </View>
+      <Text style={[styles.scanCropName, { color: tokens.colors.text }]}>{crop}</Text>
+      <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+        <Text style={[styles.statusText, { color: statusStyle.text }]}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Text>
+      </View>
+      <Text style={[styles.scanTime, { color: tokens.colors.textSecondary }]}>{time}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function AddScanItem({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity 
+      style={[styles.addScanCard, { borderColor: tokens.colors.success500 }]} 
+      onPress={onPress}
+    >
+      <View style={[styles.addScanIconCircle, { backgroundColor: tokens.colors.success95 }]}>
+        <MaterialIcons name="photo-camera" size={24} color={tokens.colors.primary500} />
+      </View>
+      <Text style={[styles.addScanTitle, { color: tokens.colors.success500 }]}>Scan New Leaf</Text>
+      <Text style={[styles.addScanSub, { color: tokens.colors.textSecondary }]}>Start a new scan</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -467,39 +538,92 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: '400',
   },
-  recentCropsSection: {
+  recentScansSection: {
     marginBottom: tokens.spacing.lg,
   },
-  cropsList: {
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: tokens.spacing.md,
+    marginBottom: tokens.spacing.md,
+  },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scansList: {
     paddingRight: tokens.spacing.md,
   },
-  addCropItem: {
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  addCropCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
+  addScanCard: {
+    width: 130,
+    height: 160,
+    borderRadius: tokens.radius.lg,
+    borderWidth: 1,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginRight: tokens.spacing.md,
+    padding: tokens.spacing.sm,
   },
-  cropItem: {
+  addScanIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 20,
+    marginBottom: tokens.spacing.sm,
   },
-  cropImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  addScanTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  addScanSub: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  scanItemCard: {
+    width: 120,
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+  },
+  scanImageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
+    overflow: 'hidden',
   },
-  cropLabel: {
-    fontSize: 12,
+  scanImage: {
+    width: '80%',
+    height: '80%',
+    resizeMode: 'contain',
+  },
+  scanCropName: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 6,
+  },
+  statusText: {
+    fontSize: 11,
     fontWeight: '600',
+  },
+  scanTime: {
+    fontSize: 11,
   },
 });
 
