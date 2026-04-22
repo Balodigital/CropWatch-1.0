@@ -60,8 +60,8 @@ export default function HomeScreen() {
         <PendingScansCard count={3} />
 
         <View style={styles.actionsSection}>
-          <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
-            Quick Access
+          <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
+            Quick Actions
           </Text>
           <View style={styles.actionsGrid}>
             <QuickActionCard
@@ -108,7 +108,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.insightSection}>
-          <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
+          <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
             Weather Based Advice
           </Text>
           <InsightCard 
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   },
   pendingTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 2,
   },
   pendingSub: {
@@ -449,7 +449,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    marginBottom: tokens.spacing.md,
   },
   actionsGrid: {
     flexDirection: 'row',
