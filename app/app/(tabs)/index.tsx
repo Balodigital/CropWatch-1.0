@@ -101,7 +101,7 @@ export default function HomeScreen() {
               bgToken="warning95"
               iconColor={tokens.colors.warning500}
               arrowBg={tokens.colors.warning80}
-              arrowIconColor={tokens.colors.warning500}
+              arrowIconColor="#997300"
               onPress={() => router.push('/library')}
             />
             <QuickActionCard
