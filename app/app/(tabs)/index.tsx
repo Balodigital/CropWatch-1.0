@@ -71,7 +71,7 @@ export default function HomeScreen() {
 
         <View style={styles.brandingHeader}>
           <Text style={[styles.welcomeToText, { color: tokens.colors.primary800 }]}>Welcome to</Text>
-          <Text style={[styles.welcomeBrandText, { color: tokens.colors.primary900 }]}>CropWatch</Text>
+          <Text style={[styles.welcomeBrandText, { color: '#2C6A4F' }]}>CropWatch</Text>
           <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
             Identify crop diseases early{"\n"}and protect your harvest.
           </Text>
@@ -281,15 +281,16 @@ function QuickActionCard({
       onPress={onPress}
     >
       <View style={styles.actionTopContent}>
-        <MaterialIcons name={icon} size={32} color={iconColor} style={styles.actionIcon} />
+        <View style={{ alignSelf: 'flex-start', position: 'relative' }}>
+          <MaterialIcons name={icon} size={32} color={iconColor} style={styles.actionIcon} />
+          {isPremium && (
+            <View style={styles.premiumBadge}>
+              <MaterialIcons name="stars" size={10} color={tokens.colors.accent50} />
+              <Text style={styles.premiumText}>Premium</Text>
+            </View>
+          )}
+        </View>
         <Text style={[styles.actionTitle, { color: tokens.colors.text }]}>{title}</Text>
-        
-        {isPremium && (
-          <View style={[styles.premiumBadge, { backgroundColor: tokens.colors.surface }]}>
-            <MaterialIcons name="stars" size={12} color={tokens.colors.accent50} />
-            <Text style={[styles.premiumText, { color: tokens.colors.accent50 }]}>Premium</Text>
-          </View>
-        )}
       </View>
       
       <View style={styles.actionBottomRow}>
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: tokens.spacing.md,
+    marginBottom: 8,
   },
   greetingText: {
     fontSize: 16,
@@ -358,7 +359,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 48,
     letterSpacing: -1,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   welcomeSubtitleText: {
     fontSize: 16,
@@ -422,7 +423,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -434,7 +435,7 @@ const styles = StyleSheet.create({
     width: '47.5%',
     padding: tokens.spacing.md,
     borderRadius: tokens.radius.lg,
-    minHeight: 180,
+    minHeight: 150,
     justifyContent: 'space-between',
     ...tokens.elevation.level1,
   },
@@ -442,12 +443,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionIcon: {
-    marginBottom: tokens.spacing.sm,
+    marginBottom: 12,
   },
   actionTitle: {
     fontSize: 16,
     fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   actionBottomRow: {
     flexDirection: 'row',
@@ -470,15 +471,21 @@ const styles = StyleSheet.create({
   premiumBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    backgroundColor: tokens.colors.surface,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
     borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 6,
+    position: 'absolute',
+    top: 0,
+    left: 38,
+    borderWidth: 1,
+    borderColor: tokens.colors.surface,
+    ...tokens.elevation.level1,
   },
   premiumText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '600',
+    color: tokens.colors.accent50,
     marginLeft: 2,
   },
   insightSection: {

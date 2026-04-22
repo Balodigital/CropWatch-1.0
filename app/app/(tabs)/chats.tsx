@@ -31,7 +31,7 @@ export default function ChatsScreen() {
           <Text style={styles.buttonText}>Upgrade to Premium</Text>
         </TouchableOpacity>
         
-        <Text style={[styles.footerText, { color: tokens.colors.neutral400 }]}>
+        <Text style={[styles.footerText, { color: '#666666' }]}>
           Join thousands of farmers getting professional support daily.
         </Text>
       </View>
