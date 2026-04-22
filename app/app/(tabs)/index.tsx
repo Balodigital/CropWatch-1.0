@@ -70,8 +70,8 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.brandingHeader}>
-          <Text style={[styles.welcomeToText, { color: tokens.colors.primary500 }]}>Welcome to</Text>
-          <Text style={[styles.welcomeBrandText, { color: tokens.colors.primary800 }]}>CropWatch</Text>
+          <Text style={[styles.welcomeToText, { color: tokens.colors.primary800 }]}>Welcome to</Text>
+          <Text style={[styles.welcomeBrandText, { color: tokens.colors.primary900 }]}>CropWatch</Text>
           <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
             Identify crop diseases early{"\n"}and protect your harvest.
           </Text>
@@ -351,14 +351,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     lineHeight: 34,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   welcomeBrandText: {
     fontSize: 42,
     fontWeight: '700',
     lineHeight: 48,
     letterSpacing: -1,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   welcomeSubtitleText: {
     fontSize: 16,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   insightSection: {
-    marginBottom: tokens.spacing.xl,
+    marginBottom: 0,
   },
   insightCard: {
     flexDirection: 'row',
