@@ -28,7 +28,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: tokens.colors.primary500,
-        tabBarInactiveTintColor: tokens.colors.neutral500,
+        tabBarInactiveTintColor: '#4D4D4D',
         tabBarShowLabel: true, // Ensure labels are shown
         tabBarStyle: {
           backgroundColor: tokens.colors.surface,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     borderColor: tokens.colors.surface,
   },
   premiumText: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: '700',
     color: tokens.colors.accent50,
     marginLeft: 1,
