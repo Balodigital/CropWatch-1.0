@@ -188,19 +188,19 @@ function PendingScansCard({ count }: { count: number }) {
   
   return (
     <View style={styles.pendingSection}>
-      <TouchableOpacity style={[styles.pendingCard, { backgroundColor: tokens.colors.warning95 }]}>
-        <View style={[styles.pendingIconContainer, { backgroundColor: tokens.colors.warning100 }]}>
-          <MaterialIcons name="sync" size={24} color={tokens.colors.warning500} />
+      <TouchableOpacity style={[styles.pendingCard, { backgroundColor: '#FAEFEB' }]}>
+        <View style={styles.pendingIconContainer}>
+          <MaterialIcons name="sync" size={24} color="#CC5A33" />
         </View>
         <View style={styles.pendingTextContainer}>
-          <Text style={[styles.pendingTitle, { color: tokens.colors.warning700 }]}>
+          <Text style={[styles.pendingTitle, { color: 'rgba(0,0,0,0.8)' }]}>
             {count} pending scans
           </Text>
-          <Text style={[styles.pendingSub, { color: tokens.colors.warning700 }]}>
+          <Text style={[styles.pendingSub, { color: 'rgba(0,0,0,0.6)' }]}>
             Will sync automatically when back online.
           </Text>
         </View>
-        <MaterialIcons name="chevron-right" size={24} color={tokens.colors.warning500} />
+        <MaterialIcons name="chevron-right" size={24} color="#CC5A33" />
       </TouchableOpacity>
     </View>
   );
