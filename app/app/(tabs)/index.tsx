@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, ScrollView, Pressable, Image, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable, Image, Platform, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { OfflineStorage } from '@/lib/offline';
@@ -30,6 +30,9 @@ export default function HomeScreen() {
     router.push('/scan/camera');
   };
 
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name;
+  const firstName = displayName?.split(' ')[0] || 'Farmer';
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -37,32 +40,26 @@ export default function HomeScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerRow}>
-          <View style={{ flex: 1 }} />
-          <View style={styles.notificationWrapper}>
+        <View style={styles.headerTopRow}>
+          <Text style={[styles.greetingText, { color: tokens.colors.success500 }]}>Hi {firstName},</Text>
+          <TouchableOpacity style={styles.notificationBtn}>
             <MaterialIcons name="notifications-none" size={28} color={tokens.colors.text} />
             <View style={[styles.notificationDot, { backgroundColor: tokens.colors.success500 }]} />
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.welcomeSection}>
-          <Text style={[styles.greetingText, { color: tokens.colors.success500 }]}>
-            Hi Farmer,
-          </Text>
-          <Text style={[styles.welcomeTo, { color: tokens.colors.primary500 }]}>
-            Welcome to
-          </Text>
-          <View style={styles.welcomeTitleRow}>
-            <Text style={[styles.welcomeTitle, { color: tokens.colors.primary800 }]}>
-              CropWatch
-            </Text>
-          </View>
-          <Text style={[styles.welcomeSubtitle, { color: tokens.colors.textSecondary }]}>
-            Identify crop diseases early and protect your harvest.
+          <Text style={[styles.welcomeToText, { color: tokens.colors.primary500 }]}>Welcome to</Text>
+          <Text style={[styles.welcomeBrandText, { color: tokens.colors.primary800 }]}>CropWatch</Text>
+          <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
+            Identify crop diseases early{"\n"}and protect your harvest.
           </Text>
         </View>
 
-        <View style={styles.quickActionsSection}>
+        <SearchBar />
+        <PendingScansCard count={3} />
+
+        <View style={styles.actionsSection}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.text }]}>
             Quick Access
           </Text>
@@ -143,20 +140,6 @@ export default function HomeScreen() {
             ))}
           </ScrollView>
         </View>
-
-        {pendingCount > 0 && (
-          <Card style={[styles.pendingCard, { backgroundColor: tokens.colors.warning90 }]} elevation="level1">
-            <MaterialIcons name="sync-problem" size={24} color={tokens.colors.warning500} style={{ marginRight: tokens.spacing.md }} />
-            <View style={{ flex: 1 }}>
-              <Text style={[tokens.typography.title, { color: tokens.colors.warning500, fontSize: 14 }]}>
-                {pendingCount} {pendingCount > 1 ? t('dashboard.pending_scans') : t('dashboard.pending_scan')}
-              </Text>
-              <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary, fontSize: 12 }]}>
-                {t('dashboard.sync_offline')}
-              </Text>
-            </View>
-          </Card>
-        )}
       </ScrollView>
     </View>
   );
@@ -179,8 +162,47 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
             </Text>
           )}
         </View>
+        <MaterialIcons name="chevron-right" size={24} color={tokens.colors.primary500} style={{ marginLeft: tokens.spacing.sm }} />
       </Card>
     </Pressable>
+  );
+}
+
+function SearchBar() {
+  return (
+    <View style={styles.searchSection}>
+      <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral100 }]}>
+        <MaterialIcons name="search" size={24} color={tokens.colors.neutral500} />
+        <TextInput
+          placeholder="Search crops, diseases, or symptoms..."
+          placeholderTextColor={tokens.colors.neutral500}
+          style={styles.searchInput}
+        />
+      </View>
+    </View>
+  );
+}
+
+function PendingScansCard({ count }: { count: number }) {
+  if (count === 0) return null;
+  
+  return (
+    <View style={styles.pendingSection}>
+      <TouchableOpacity style={[styles.pendingCard, { backgroundColor: tokens.colors.warning95 }]}>
+        <View style={[styles.pendingIconContainer, { backgroundColor: tokens.colors.warning100 }]}>
+          <MaterialIcons name="sync" size={24} color={tokens.colors.warning500} />
+        </View>
+        <View style={styles.pendingTextContainer}>
+          <Text style={[styles.pendingTitle, { color: tokens.colors.warning700 }]}>
+            {count} pending scans
+          </Text>
+          <Text style={[styles.pendingSub, { color: tokens.colors.warning700 }]}>
+            Will sync automatically when back online.
+          </Text>
+        </View>
+        <MaterialIcons name="chevron-right" size={24} color={tokens.colors.warning500} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -248,20 +270,24 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: tokens.spacing.xxl,
   },
-  headerRow: {
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: tokens.spacing.lg,
+    marginBottom: 8,
   },
-  notificationWrapper: {
+  greetingText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  notificationBtn: {
     position: 'relative',
     padding: 4,
   },
   notificationDot: {
     position: 'absolute',
     top: 6,
-    right: 6,
+    right: 8,
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -271,81 +297,80 @@ const styles = StyleSheet.create({
   welcomeSection: {
     marginBottom: tokens.spacing.xl,
   },
-  greetingText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  welcomeTo: {
-    fontSize: 28,
-    fontWeight: '500',
-    lineHeight: 34,
-    letterSpacing: -0.5,
-  },
   welcomeTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  welcomeToText: {
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 34,
+    marginBottom: 4,
+  },
+  welcomeBrandText: {
+    fontSize: 42,
+    fontWeight: '700',
+    lineHeight: 48,
+    letterSpacing: -1,
     marginBottom: 12,
   },
-  welcomeTitle: {
-    fontSize: 42,
-    fontWeight: '600',
-    lineHeight: 48,
-    letterSpacing: -1.5,
-  },
-  welcomeIcon: {
-    marginLeft: tokens.spacing.sm,
-    transform: [{ rotate: '15deg' }],
-  },
-  welcomeSubtitle: {
+  welcomeSubtitleText: {
     fontSize: 16,
     lineHeight: 24,
-    maxWidth: '85%',
+    color: tokens.colors.textSecondary,
+    maxWidth: '90%',
   },
-  insightCard: {
+  searchSection: {
+    marginBottom: tokens.spacing.lg,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 54,
+    borderRadius: 27,
+    paddingHorizontal: tokens.spacing.md,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: tokens.spacing.sm,
+    fontSize: 14,
+  },
+  searchButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pendingSection: {
+    marginBottom: tokens.spacing.xl,
+  },
+  pendingCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: tokens.spacing.md,
     borderRadius: tokens.radius.lg,
   },
-  insightIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  pendingIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: tokens.spacing.md,
   },
-  insightTextContainer: {
+  pendingTextContainer: {
     flex: 1,
   },
-  insightLabel: {
-    fontSize: 12,
+  pendingTitle: {
+    fontSize: 16,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
     marginBottom: 2,
   },
-  insightText: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 2,
-  },
-  insightHighlight: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '400',
-  },
-  insightAction: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: tokens.spacing.sm,
-  },
-  quickActionsSection: {
-    marginBottom: tokens.spacing.xl,
+  pendingSub: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   actionsSection: {
     marginBottom: tokens.spacing.xl,
@@ -415,6 +440,33 @@ const styles = StyleSheet.create({
   insightSection: {
     marginBottom: tokens.spacing.xl,
   },
+  insightCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.lg,
+  },
+  insightIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+  },
+  insightTextContainer: {
+    flex: 1,
+  },
+  insightText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 2,
+  },
+  insightHighlight: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+  },
   recentCropsSection: {
     marginBottom: tokens.spacing.lg,
   },
@@ -448,14 +500,6 @@ const styles = StyleSheet.create({
   cropLabel: {
     fontSize: 12,
     fontWeight: '600',
-  },
-  pendingCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: tokens.spacing.md,
-    marginTop: tokens.spacing.sm,
-    borderWidth: 1,
-    borderColor: tokens.colors.warning100,
   },
 });
 
