@@ -30,6 +30,27 @@ export default function HomeScreen() {
     router.push('/scan/camera');
   };
 
+  const handleViewResult = (crop: string, status: string) => {
+    const dummyDiagnosis = status === 'healthy' ? [] : [
+      {
+        name: `${crop} Blight`,
+        confidence: 0.85,
+        severity: status === 'infected' ? 'Severe' : 'Moderate',
+        treatment: `Apply recommended fungicides and ensure proper spacing for better airflow.`,
+        prevention: `Use disease-resistant seeds and practice crop rotation.`
+      }
+    ];
+
+    router.push({
+      pathname: '/result',
+      params: {
+        diagnosis: JSON.stringify(dummyDiagnosis),
+        cropType: crop,
+        image: crop.toLowerCase(),
+      }
+    });
+  };
+
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name;
   const firstName = displayName?.split(' ')[0] || 'Farmer';
 
@@ -48,7 +69,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.welcomeSection}>
+        <View style={styles.brandingHeader}>
           <Text style={[styles.welcomeToText, { color: tokens.colors.primary500 }]}>Welcome to</Text>
           <Text style={[styles.welcomeBrandText, { color: tokens.colors.primary800 }]}>CropWatch</Text>
           <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
@@ -139,28 +160,28 @@ export default function HomeScreen() {
               status="healthy" 
               time="2 days ago" 
               image={CROP_IMAGES.tomato} 
-              onPress={() => {}}
+              onPress={() => handleViewResult('Tomato', 'healthy')}
             />
             <ScanItem 
               crop="Cassava" 
               status="pending" 
               time="3 days ago" 
               image={CROP_IMAGES.cassava} 
-              onPress={() => {}}
+              onPress={() => handleViewResult('Cassava', 'pending')}
             />
             <ScanItem 
               crop="Maize" 
               status="infected" 
               time="5 days ago" 
               image={CROP_IMAGES.maize} 
-              onPress={() => {}}
+              onPress={() => handleViewResult('Maize', 'infected')}
             />
             <ScanItem 
               crop="Pepper" 
               status="healthy" 
               time="6 days ago" 
               image={CROP_IMAGES.pepper} 
-              onPress={() => {}}
+              onPress={() => handleViewResult('Pepper', 'healthy')}
             />
           </ScrollView>
         </View>
