@@ -12,7 +12,7 @@ function TabIcon({ name, color, focused, isPremium }: { name: keyof typeof Mater
       {focused && <View style={[styles.activeDot, { backgroundColor: tokens.colors.primary500 }]} />}
       {isPremium && (
         <View style={styles.premiumBadge}>
-          <MaterialIcons name="stars" size={8} color={tokens.colors.accent50} />
+          <MaterialIcons name="stars" size={10} color={tokens.colors.accent50} />
           <Text style={styles.premiumText}>Premium</Text>
         </View>
       )}
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     position: 'absolute',
     top: -4,
-    right: -24,
+    right: -32,
     borderWidth: 1,
     borderColor: tokens.colors.surface,
   },
