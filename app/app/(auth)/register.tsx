@@ -21,6 +21,7 @@ import { StrengthMeter } from '@/components/auth/StrengthMeter';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { SuccessOverlay } from '@/components/auth/SuccessOverlay';
 import { usePasswordValidation } from '@/hooks/use-password-validation';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft } from 'lucide-react-native';
 
 export default function RegisterScreen() {
@@ -31,6 +32,7 @@ export default function RegisterScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   
   const router = useRouter();
+  const { setOnboardingFinished } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
@@ -65,7 +67,10 @@ export default function RegisterScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <TouchableOpacity 
-            onPress={() => router.back()} 
+            onPress={async () => {
+              await setOnboardingFinished(false);
+              router.replace('/');
+            }} 
             style={styles.backButton}
           >
             <ChevronLeft size={24} color={theme.primary} />

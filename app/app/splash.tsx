@@ -31,9 +31,10 @@ export default function SplashScreen() {
     ]).start();
 
     const timer = setTimeout(() => {
+      // Force user to onboarding if they haven't finished it
+      // @ts-ignore
       if (!hasFinishedOnboarding) {
-        // @ts-ignore
-        router.replace('/(onboarding)/index');
+        router.replace('/onboarding');
       } else if (!session) {
         router.replace('/(auth)/login');
       } else {

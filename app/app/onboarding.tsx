@@ -49,7 +49,10 @@ export default function OnboardingScreen() {
 
   const handleNext = async () => {
     if (currentIndex < ONBOARDING_DATA.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+      flatListRef.current?.scrollToIndex({ 
+        index: currentIndex + 1,
+        animated: true 
+      });
     } else {
       await setOnboardingFinished(true);
       router.replace('/(auth)/login');
@@ -99,7 +102,13 @@ export default function OnboardingScreen() {
           const x = e.nativeEvent.contentOffset.x;
           setCurrentIndex(Math.round(x / width));
         }}
+        scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
+        getItemLayout={(_, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
       />
 
       <View style={styles.footer}>

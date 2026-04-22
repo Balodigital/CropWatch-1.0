@@ -35,15 +35,25 @@ export default function SettingsScreen() {
   const currentLanguage = i18n.language;
 
   const handleLogout = async () => {
-    setLogoutModalVisible(false);
-    await signOut();
-    router.replace('/(auth)/login');
+    try {
+      setLogoutModalVisible(false);
+      await signOut();
+      // Global guard in _layout.tsx will handle redirection to login
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+    }
   };
 
   const handleSignOutAll = async () => {
-    setSignOutAllModalVisible(false);
-    await signOutAllDevices();
-    router.replace('/(auth)/login');
+    try {
+      setSignOutAllModalVisible(false);
+      await signOutAllDevices();
+      // Global guard in _layout.tsx will handle redirection to login
+    } catch (error) {
+      console.error('Sign out all error:', error);
+      Alert.alert('Error', 'Failed to sign out of all devices. Please try again.');
+    }
   };
 
   return (
@@ -259,7 +269,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     ...tokens.typography.caption,
-    color: tokens.colors.neutral400,
+    color: '#666666',
     fontSize: 11,
   },
 });
