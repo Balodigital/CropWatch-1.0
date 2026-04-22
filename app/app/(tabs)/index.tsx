@@ -169,11 +169,11 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
 function SearchBar() {
   return (
     <View style={styles.searchSection}>
-      <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral100 }]}>
-        <MaterialIcons name="search" size={24} color={tokens.colors.neutral500} />
+      <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral200 }]}>
+        <MaterialIcons name="search" size={24} color={tokens.colors.neutral700} />
         <TextInput
           placeholder="Search crops, diseases, or symptoms..."
-          placeholderTextColor={tokens.colors.neutral500}
+          placeholderTextColor={tokens.colors.neutral700}
           style={styles.searchInput}
         />
       </View>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: tokens.spacing.md,
   },
   greetingText: {
     fontSize: 16,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: tokens.colors.surface,
   },
-  welcomeSection: {
+  brandingHeader: {
     marginBottom: tokens.spacing.xl,
   },
   welcomeTitleRow: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     maxWidth: '90%',
   },
   searchSection: {
-    marginBottom: tokens.spacing.lg,
+    marginBottom: tokens.spacing.xl,
   },
   searchBar: {
     flexDirection: 'row',
