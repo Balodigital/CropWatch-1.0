@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { tokens } from '@/constants/tokens';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -7,62 +7,52 @@ interface SettingsItemProps {
   icon: keyof typeof MaterialIcons.glyphMap;
   title: string;
   subtitle?: string;
-  value?: string;
   onPress?: () => void;
+  rightElement?: React.ReactNode;
+  showArrow?: boolean;
   destructive?: boolean;
-  showChevron?: boolean;
-  rightIcon?: keyof typeof MaterialIcons.glyphMap;
 }
 
 export const SettingsItem: React.FC<SettingsItemProps> = ({
   icon,
   title,
   subtitle,
-  value,
   onPress,
+  rightElement,
+  showArrow = true,
   destructive = false,
-  showChevron = true,
-  rightIcon,
 }) => {
   return (
-    <Pressable
+    <TouchableOpacity
+      style={styles.container}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.container,
-        { opacity: pressed ? 0.7 : 1 }
-      ]}
       disabled={!onPress}
+      activeOpacity={0.7}
     >
-      <View style={[styles.iconContainer, { backgroundColor: destructive ? tokens.colors.error50 : tokens.colors.primary50 }]}>
+      <View style={[styles.iconContainer, destructive && styles.destructiveIconContainer]}>
         <MaterialIcons 
           name={icon} 
-          size={22} 
+          size={24} 
           color={destructive ? tokens.colors.error500 : tokens.colors.primary500} 
         />
       </View>
       
       <View style={styles.content}>
-        <Text style={[tokens.typography.title, styles.title, destructive && { color: tokens.colors.error500 }]}>
+        <Text style={[tokens.typography.title, styles.title, destructive && styles.destructiveText]}>
           {title}
         </Text>
         {subtitle && (
-          <Text style={[tokens.typography.caption, styles.subtitle]} numberOfLines={1}>
+          <Text style={[tokens.typography.caption, styles.subtitle]}>
             {subtitle}
           </Text>
         )}
       </View>
 
-      <View style={styles.rightContainer}>
-        {value && (
-          <Text style={[tokens.typography.caption, styles.value]}>{value}</Text>
-        )}
-        {rightIcon ? (
-          <MaterialIcons name={rightIcon} size={24} color={destructive ? tokens.colors.error500 : tokens.colors.neutral400} />
-        ) : showChevron && onPress ? (
-          <MaterialIcons name="chevron-right" size={24} color={tokens.colors.neutral400} />
-        ) : null}
-      </View>
-    </Pressable>
+      {rightElement}
+      {showArrow && !rightElement && (
+        <MaterialIcons name="chevron-right" size={24} color={tokens.colors.neutral400} />
+      )}
+    </TouchableOpacity>
   );
 };
 
@@ -75,35 +65,32 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tokens.colors.border,
-    minHeight: 64,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: tokens.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: tokens.spacing.md,
+    backgroundColor: tokens.colors.primary50,
+  },
+  destructiveIconContainer: {
+    backgroundColor: tokens.colors.error50,
   },
   content: {
     flex: 1,
   },
   title: {
     fontSize: 16,
-    fontWeight: '500',
     color: tokens.colors.text,
+  },
+  destructiveText: {
+    color: tokens.colors.error500,
   },
   subtitle: {
     color: tokens.colors.textSecondary,
     marginTop: 2,
     fontSize: 13,
-  },
-  rightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  value: {
-    color: tokens.colors.textSecondary,
-    marginRight: tokens.spacing.xs,
   },
 });

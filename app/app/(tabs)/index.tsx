@@ -123,7 +123,7 @@ export default function HomeScreen() {
               iconColor={tokens.colors.tertiary700}
               arrowBg={tokens.colors.tertiary80}
               arrowIconColor={tokens.colors.tertiary700}
-              onPress={() => {}}
+              onPress={() => router.push('/tips')}
             />
           </View>
         </View>

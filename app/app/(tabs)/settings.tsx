@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { useAuth } from '@/context/AuthContext';
+
 import { SettingsItem } from '@/components/profile/SettingsItem';
 import { SettingsSection } from '@/components/profile/SettingsSection';
 import { ToggleItem } from '@/components/profile/ToggleItem';
@@ -25,7 +26,6 @@ export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const { user, profile, signOut, signOutAllDevices, deactivateAccount } = useAuth();
   
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [biometricLock, setBiometricLock] = useState(false);
   
@@ -92,12 +92,6 @@ export default function SettingsScreen() {
 
       {/* Appearance & Notifications */}
       <SettingsSection title={t('settings.preferences')}>
-        <ToggleItem
-          icon="dark-mode"
-          title={t('settings.dark_mode')}
-          value={darkMode}
-          onValueChange={setDarkMode}
-        />
         <ToggleItem
           icon="notifications-none"
           title={t('settings.notifications')}

@@ -64,7 +64,7 @@ export const OfflineStorage = {
 
   async isOnline(): Promise<boolean> {
     const networkState = await Network.getNetworkStateAsync();
-    return networkState.isConnected ?? false;
+    return (networkState.isConnected && networkState.isInternetReachable) ?? false;
   },
 
   async clearAll(): Promise<void> {

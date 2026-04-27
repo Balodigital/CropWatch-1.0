@@ -73,6 +73,15 @@ export async function submitDiagnosis(
     const data = await response.json();
     return { success: true, diagnosis: data.diagnosis };
   } catch (error) {
+    const isStillOnline = await OfflineStorage.isOnline();
+    
+    if (isStillOnline) {
+      return { 
+        success: false, 
+        error: "Could not connect to the diagnosis server. Please check if the API tunnel is active." 
+      };
+    }
+
     const pendingScanId = `offline_${Date.now()}`;
     await OfflineStorage.savePendingScan({
       id: pendingScanId,
