@@ -62,6 +62,12 @@ export const OfflineStorage = {
     return data ? JSON.parse(data) : {};
   },
 
+  async removeCachedDiagnosis(scanId: string): Promise<void> {
+    const cache = await this.getDiagnosisCache();
+    delete cache[scanId];
+    await AsyncStorage.setItem(DIAGNOSIS_CACHE_KEY, JSON.stringify(cache));
+  },
+
   async isOnline(): Promise<boolean> {
     const networkState = await Network.getNetworkStateAsync();
     return (networkState.isConnected && networkState.isInternetReachable) ?? false;

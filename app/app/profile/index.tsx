@@ -80,7 +80,7 @@ export default function ProfileScreen() {
           <SettingsItem 
             icon="language" 
             title="App Language" 
-            value={profile?.language_pref === 'pcm' ? 'Nigerian Pidgin' : 'English'}
+            subtitle={profile?.language_pref === 'pcm' ? 'Nigerian Pidgin' : 'English'}
             onPress={() => router.push('/(tabs)/settings')}
           />
         </View>

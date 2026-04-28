@@ -82,7 +82,7 @@ export default function HomeScreen() {
         <SearchBar />
         <PendingScansCard 
           count={pendingCount} 
-          onPress={() => router.push({ pathname: '/(tabs)/history', params: { filter: 'pending' } })} 
+          onPress={() => router.push('/scan/pending')} 
         />
 
         <View style={styles.actionsSection}>
