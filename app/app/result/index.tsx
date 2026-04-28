@@ -74,6 +74,12 @@ export default function ResultScreen() {
     <View style={styles.container}>
       <AppHeader 
         title={t('result.title')} 
+        showBack={false}
+        rightElement={
+          <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+            <Text style={{ color: tokens.colors.primary500, fontWeight: '700', paddingRight: 10 }}>Done</Text>
+          </TouchableOpacity>
+        }
       />
 
       <ScrollView

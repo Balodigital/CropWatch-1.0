@@ -6,6 +6,7 @@ import { tokens } from '@/constants/tokens';
 import { submitDiagnosis } from '@/lib/api';
 import { OfflineStorage } from '@/lib/offline';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { optimizeImageForUpload } from '@/lib/images';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
@@ -59,8 +60,14 @@ export default function AnalyzingScreen() {
 
   const runAnalysis = async () => {
     try {
+      // Optimize image here if it's a URI (not already base64)
+      let finalImage = image || '';
+      if (finalImage && !finalImage.startsWith('data:image/')) {
+        finalImage = await optimizeImageForUpload(finalImage);
+      }
+
       const result = await submitDiagnosis(
-        image || '',
+        finalImage,
         description || '',
         cropType || ''
       );

@@ -48,14 +48,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 title={finalCancelLabel} 
                 onPress={onClose} 
                 variant="ghost" 
-                style={styles.button}
+                style={styles.cancelButton}
+                textStyle={styles.cancelButtonText}
               />
               <Button 
                 title={finalConfirmLabel} 
                 onPress={onConfirm} 
-                variant={isDestructive ? 'outline' : 'primary'}
-                style={[styles.button, isDestructive ? styles.destructiveButton : undefined] as any}
-                textStyle={isDestructive ? { color: tokens.colors.error500 } : undefined}
+                variant="outline"
+                style={[styles.confirmButton, isDestructive ? styles.destructiveButton : styles.primaryConfirmButton]}
+                textStyle={[styles.confirmButtonText, isDestructive ? styles.destructiveButtonText : styles.primaryConfirmButtonText]}
               />
             </View>
           </Pressable>
@@ -95,12 +96,47 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     gap: tokens.spacing.md,
+    marginTop: tokens.spacing.sm,
   },
-  button: {
-    flex: 1,
+  cancelButton: {
+    minWidth: 80,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  cancelButtonText: {
+    color: '#008080', // Teal color like in image
+    fontWeight: '600',
+    lineHeight: undefined,
+    textAlign: 'center',
+  },
+  confirmButton: {
+    minWidth: 100,
+    borderRadius: 24, // Very rounded
+    borderWidth: 1,
+    paddingVertical: 10,
+    minHeight: 0, // Override Button.tsx minHeight
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  confirmButtonText: {
+    fontWeight: '600',
+    lineHeight: undefined, // Fix vertical alignment
+    textAlign: 'center',
   },
   destructiveButton: {
     borderColor: tokens.colors.error500,
+  },
+  destructiveButtonText: {
+    color: tokens.colors.error500,
+  },
+  primaryConfirmButton: {
+    borderColor: tokens.colors.primary500,
+  },
+  primaryConfirmButtonText: {
+    color: tokens.colors.primary500,
   },
 });

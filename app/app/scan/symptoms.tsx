@@ -33,7 +33,7 @@ export default function SymptomsScreen() {
     if (!isValid) return;
 
     setIsSubmitting(true);
-    router.replace({
+    router.push({
       pathname: '/scan/analyzing',
       params: { image, cropType, description },
     });
@@ -41,7 +41,7 @@ export default function SymptomsScreen() {
 
   const skipDescription = () => {
     setIsSubmitting(true);
-    router.replace({
+    router.push({
       pathname: '/scan/analyzing',
       params: { image, cropType, description: '' },
     });

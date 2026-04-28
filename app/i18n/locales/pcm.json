@@ -150,6 +150,9 @@
     "lang_en": "English",
     "lang_pcm": "Nigerian Pidgin"
   },
+  "history": {
+    "delete_confirm": "You sure say you wan delete dis scan from your history?"
+  },
   "profile": {
     "title": "Your Profile",
     "edit_title": "Change Your Info",

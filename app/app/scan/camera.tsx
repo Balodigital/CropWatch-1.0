@@ -35,10 +35,9 @@ export default function CameraScreen() {
           quality: 0.8,
         });
         if (photo?.uri) {
-          const optimizedBase64 = await optimizeImageForUpload(photo.uri);
           router.replace({
             pathname: '/scan/preview',
-            params: { image: optimizedBase64 },
+            params: { image: photo.uri },
           });
         }
       } catch (error) {
@@ -60,18 +59,10 @@ export default function CameraScreen() {
     });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      setIsCapturing(true);
-      try {
-        const optimizedBase64 = await optimizeImageForUpload(result.assets[0].uri);
-        router.replace({
-          pathname: '/scan/preview',
-          params: { image: optimizedBase64 },
-        });
-      } catch (error) {
-        Alert.alert(t('common.error'), t('scan.upload_error') || 'Failed to process image');
-      } finally {
-        setIsCapturing(false);
-      }
+      router.replace({
+        pathname: '/scan/preview',
+        params: { image: result.assets[0].uri },
+      });
     }
   };
 

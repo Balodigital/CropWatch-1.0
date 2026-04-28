@@ -59,10 +59,10 @@ export default function HomeScreen() {
   const firstName = displayName?.split(' ')[0] || 'Farmer';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: 20 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerTopRow}>
