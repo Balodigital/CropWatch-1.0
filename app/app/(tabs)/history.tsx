@@ -9,7 +9,6 @@ import {
   FlatList,
   RefreshControl,
   Image,
-  Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +17,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { OfflineStorage } from '@/lib/offline';
 import { Diagnosis } from '@/lib/supabase';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { tokens } from '@/constants/tokens';
 import { CROP_IMAGES } from '@/lib/supabase';
 
@@ -39,6 +39,8 @@ export default function HistoryScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
 
   const loadHistory = async () => {
     const diagnosisCache = await OfflineStorage.getDiagnosisCache();
@@ -102,25 +104,22 @@ export default function HistoryScreen() {
   };
 
   const handleDelete = (item: HistoryItem) => {
-    Alert.alert(
-      t('common.delete') || 'Delete',
-      t('history.delete_confirm') || 'Are you sure you want to delete this scan?',
-      [
-        { text: t('common.cancel') || 'Cancel', style: 'cancel' },
-        { 
-          text: t('common.delete') || 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            if (item.status === 'pending') {
-              await OfflineStorage.removePendingScan(item.id);
-            } else {
-              await OfflineStorage.removeCachedDiagnosis(item.id);
-            }
-            loadHistory();
-          }
-        }
-      ]
-    );
+    setItemToDelete(item);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    if (itemToDelete.status === 'pending') {
+      await OfflineStorage.removePendingScan(itemToDelete.id);
+    } else {
+      await OfflineStorage.removeCachedDiagnosis(itemToDelete.id);
+    }
+    
+    setDeleteModalVisible(false);
+    setItemToDelete(null);
+    loadHistory();
   };
 
   const renderItem = ({ item }: { item: HistoryItem }) => {
@@ -286,6 +285,20 @@ export default function HistoryScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title={t('common.delete') || 'Delete Scan'}
+        message={t('history.delete_confirm') || 'Are you sure you want to delete this scan from your history?'}
+        confirmLabel={t('common.delete') || 'Delete'}
+        cancelLabel={t('common.cancel') || 'Cancel'}
+        isDestructive={true}
+      />
     </View>
   );
 }
