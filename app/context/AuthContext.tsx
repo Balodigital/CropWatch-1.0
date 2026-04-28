@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import i18n from '@/i18n';
 
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;

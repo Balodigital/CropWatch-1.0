@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { AuthError, AuthResponse, UserResponse } from '@supabase/supabase-js';
+import { AuthError } from '@supabase/supabase-js';
 
 /**
  * Handle Supabase Auth errors gracefully
@@ -71,3 +71,5 @@ export const resetPassword = async (email: string) => {
     return { data: null, error: 'An unexpected error occurred. Please try again.' };
   }
 };
+
+
