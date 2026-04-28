@@ -18,16 +18,28 @@ export default function HomeScreen() {
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
   const [pendingCount, setPendingCount] = useState(0);
+  const [history, setHistory] = useState<any[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      loadPendingCount();
+      loadData();
     }, [])
   );
 
-  const loadPendingCount = async () => {
+  const loadData = async () => {
     const count = await OfflineStorage.getPendingCount();
     setPendingCount(count);
+    
+    // Load history for search
+    const diagnosisCache = await OfflineStorage.getDiagnosisCache();
+    const historyItems = Object.entries(diagnosisCache).map(([id, data]: [string, any]) => ({
+      id,
+      cropType: data.cropType || 'Crop',
+      diagnosis: data.diagnosis || [],
+      timestamp: data.timestamp
+    }));
+    setHistory(historyItems);
   };
 
   const handleStartScan = () => {
@@ -81,7 +93,7 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <SearchBar />
+        <SearchBar history={history} />
         <PendingScansCard 
           count={pendingCount} 
           onPress={() => router.push('/scan/pending')} 
@@ -173,8 +185,54 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
   );
 }
 
-function SearchBar() {
+function SearchBar({ history }: { history: any[] }) {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const handleSearch = (text: string) => {
+    setQuery(text);
+    if (text.length > 0) {
+      const filtered = history.reduce((acc: any[], item) => {
+        const cropMatch = item.cropType.toLowerCase().includes(text.toLowerCase());
+        const diseaseMatches = item.diagnosis.filter((d: any) => 
+          d.name.toLowerCase().includes(text.toLowerCase())
+        );
+
+        if (cropMatch || diseaseMatches.length > 0) {
+          acc.push({
+            id: item.id,
+            cropType: item.cropType,
+            diagnosis: item.diagnosis,
+            display: cropMatch ? item.cropType : diseaseMatches[0].name,
+            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : item.cropType
+          });
+        }
+        return acc;
+      }, []);
+      setSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (suggestion: any) => {
+    setQuery('');
+    setShowSuggestions(false);
+    router.push({
+      pathname: '/result',
+      params: {
+        diagnosis: JSON.stringify(suggestion.diagnosis),
+        cropType: suggestion.cropType,
+        image: '',
+      }
+    });
+  };
+
   return (
     <View style={styles.searchSection}>
       <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral200 }]}>
@@ -183,8 +241,38 @@ function SearchBar() {
           placeholder={t('dashboard.search_placeholder')}
           placeholderTextColor={tokens.colors.neutral700}
           style={styles.searchInput}
+          value={query}
+          onChangeText={handleSearch}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          onFocus={() => query.length > 0 && setShowSuggestions(true)}
         />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => handleSearch('')}>
+            <MaterialIcons name="close" size={20} color={tokens.colors.neutral700} />
+          </TouchableOpacity>
+        )}
       </View>
+
+      {showSuggestions && suggestions.length > 0 && (
+        <View style={styles.suggestionsContainer}>
+          {suggestions.map((item, index) => (
+            <TouchableOpacity 
+              key={item.id} 
+              style={[
+                styles.suggestionItem,
+                index === suggestions.length - 1 && { borderBottomWidth: 0 }
+              ]}
+              onPress={() => selectSuggestion(item)}
+            >
+              <MaterialIcons name="history" size={20} color={tokens.colors.neutral500} style={{ marginRight: 12 }} />
+              <View>
+                <Text style={styles.suggestionTitle}>{item.display}</Text>
+                <Text style={styles.suggestionSub}>{item.subDisplay}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -389,6 +477,34 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 27,
     paddingHorizontal: tokens.spacing.md,
+  },
+  suggestionsContainer: {
+    backgroundColor: tokens.colors.surface,
+    borderRadius: tokens.radius.lg,
+    marginTop: tokens.spacing.xs,
+    padding: tokens.spacing.xs,
+    ...tokens.elevation.level2,
+    position: 'absolute',
+    top: 58,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: tokens.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.colors.neutral100,
+  },
+  suggestionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: tokens.colors.text,
+  },
+  suggestionSub: {
+    fontSize: 12,
+    color: tokens.colors.textSecondary,
   },
   searchInput: {
     flex: 1,
