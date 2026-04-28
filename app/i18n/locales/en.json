@@ -13,7 +13,8 @@
     "retake": "Retake",
     "continue": "Continue",
     "retry": "Try Again",
-    "go_home": "Go to Home"
+    "go_home": "Go to Home",
+    "delete": "Delete"
   },
   "splash": {
     "subtitle": "Smart crop disease detection"
