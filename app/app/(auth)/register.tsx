@@ -3,13 +3,13 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
   TouchableOpacity, 
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
@@ -24,6 +24,7 @@ import { usePasswordValidation } from '@/hooks/use-password-validation';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
@@ -37,6 +38,7 @@ export default function RegisterScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { requirements, strength, isValid: passwordValid } = usePasswordValidation(password);
 
@@ -62,12 +64,12 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]} showsVerticalScrollIndicator={false}>
           <TouchableOpacity 
             onPress={async () => {
               await setOnboardingFinished(false);
@@ -146,7 +148,7 @@ export default function RegisterScreen() {
           router.replace('/(auth)/login');
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -157,7 +159,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 20,
     paddingBottom: 40,
   },
   backButton: {

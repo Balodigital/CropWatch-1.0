@@ -10,11 +10,13 @@ import { useAuth } from '@/context/AuthContext';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Avatar } from '@/components/profile/Avatar';
 import { CROP_IMAGES } from '@/lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { user, profile } = useAuth();
+  const insets = useSafeAreaInsets();
   const [pendingCount, setPendingCount] = useState(0);
 
   useFocusEffect(
@@ -60,7 +62,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerTopRow}>
@@ -325,7 +327,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: tokens.spacing.md,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: tokens.spacing.xxl,
   },
   headerTopRow: {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { tokens } from '@/constants/tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
   title: string;
@@ -16,9 +17,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   rightElement
 }) => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.outerContainer}>
+    <View style={[styles.outerContainer, { paddingTop: insets.top }]}>
       <View style={styles.container}>
         <View style={styles.leftSection}>
           {showBack && (
@@ -45,7 +47,6 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: tokens.colors.border,
-    paddingTop: Platform.OS === 'ios' ? 50 : 10,
   },
   container: {
     height: 60,

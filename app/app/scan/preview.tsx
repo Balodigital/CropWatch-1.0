@@ -22,7 +22,7 @@ export default function PreviewScreen() {
   };
 
   const handleRetake = () => {
-    router.back();
+    router.replace('/scan/camera');
   };
 
   if (!image) {

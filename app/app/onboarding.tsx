@@ -5,9 +5,9 @@ import {
   StyleSheet, 
   FlatList, 
   Dimensions, 
-  TouchableOpacity, 
-  SafeAreaView 
+  TouchableOpacity
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
@@ -16,6 +16,7 @@ import { Camera, Cpu, ShieldCheck } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ const ONBOARDING_DATA = [
 ];
 
 export default function OnboardingScreen() {
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
@@ -86,8 +88,8 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
           <Text style={[Typography.labelLarge, { color: theme.primary }]}>{t('onboarding.skip')}</Text>
         </TouchableOpacity>
@@ -135,7 +137,7 @@ export default function OnboardingScreen() {
           style={styles.nextButton}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -145,7 +147,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
     alignItems: 'flex-end',
   },
   skipButton: {
