@@ -6,12 +6,14 @@ import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Sprout } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function SplashScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { session, hasFinishedOnboarding } = useAuth();
+  const { t } = useTranslation();
   
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.9);
@@ -59,7 +61,7 @@ export default function SplashScreen() {
           CropWatch
         </Text>
         <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-          Smart crop disease detection
+          {t('splash.subtitle')}
         </Text>
       </Animated.View>
     </View>

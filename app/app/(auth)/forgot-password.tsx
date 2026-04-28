@@ -18,6 +18,7 @@ import { resetPassword } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ChevronLeft, Mail, CheckCircle2 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -26,6 +27,7 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { t } = useTranslation();
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -37,12 +39,12 @@ export default function ForgotPasswordScreen() {
       const { error } = await resetPassword(email);
       
       if (error) {
-        Alert.alert('Error', error);
+        Alert.alert(t('common.error'), error);
       } else {
         setIsSent(true);
       }
     } catch (err: any) {
-      Alert.alert('Error', 'An unexpected error occurred.');
+      Alert.alert(t('common.error'), t('auth.unexpected_error'));
     } finally {
       setLoading(false);
     }
@@ -56,13 +58,13 @@ export default function ForgotPasswordScreen() {
             <CheckCircle2 size={48} color={theme.success} strokeWidth={2.5} />
           </View>
           <Text style={[Typography.headlineSmall, { color: theme.onSurface, marginTop: 24, textAlign: 'center' }]}>
-            Check Your Email
+            {t('auth.forgot.check_email')}
           </Text>
           <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 12, textAlign: 'center', marginBottom: 40 }]}>
-            We've sent password reset instructions to {email}. Please check your inbox and follow the link to reset your password.
+            {t('auth.forgot.check_email_desc', { email })}
           </Text>
           <Button
-            title="Back to Sign In"
+            title={t('auth.forgot.back_login')}
             onPress={() => router.replace('/(auth)/login')}
             style={{ width: '100%' }}
           />
@@ -83,22 +85,22 @@ export default function ForgotPasswordScreen() {
             style={styles.backButton}
           >
             <ChevronLeft size={24} color={theme.primary} />
-            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>Back</Text>
+            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
           <View style={styles.header}>
             <Text style={[Typography.headlineLarge, { color: theme.onSurface }]}>
-              Forgot Password
+              {t('auth.forgot.title')}
             </Text>
             <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-              Enter your email and we'll send you a secure link to reset your password.
+              {t('auth.forgot.desc')}
             </Text>
           </View>
 
           <View style={styles.form}>
             <Input
-              label="Email Address"
-              placeholder="Enter your registered email"
+              label={t('auth.email_label')}
+              placeholder={t('auth.forgot.email_placeholder')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -108,7 +110,7 @@ export default function ForgotPasswordScreen() {
             />
 
             <Button
-              title="Send Reset Link"
+              title={t('auth.forgot.send_link')}
               onPress={handleResetRequest}
               loading={loading}
               disabled={!emailValid}

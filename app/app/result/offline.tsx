@@ -14,7 +14,7 @@ export default function OfflineResultScreen() {
     <View style={styles.container}>
       <AppHeader title="Offline Mode" />
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.warning50 }]}>
+        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.warning100 }]}>
           <Text style={styles.icon}>📡</Text>
         </View>
 

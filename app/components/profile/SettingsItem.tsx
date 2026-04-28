@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.primary50,
   },
   destructiveIconContainer: {
-    backgroundColor: tokens.colors.error50,
+    backgroundColor: tokens.colors.error100,
   },
   content: {
     flex: 1,

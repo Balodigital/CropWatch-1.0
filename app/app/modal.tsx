@@ -9,9 +9,9 @@ export default function ModalScreen() {
     <View style={styles.container}>
       <AppHeader title="Modal" />
       <View style={styles.content}>
-        <Text style={[tokens.typography.h1, { color: tokens.colors.text }]}>This is a modal</Text>
+        <Text style={[tokens.typography.heading, { color: tokens.colors.text }]}>This is a modal</Text>
         <Link href="/" dismissTo style={styles.link}>
-          <Text style={[tokens.typography.link, { color: tokens.colors.primary500 }]}>Go to home screen</Text>
+          <Text style={[tokens.typography.body, { color: tokens.colors.primary500 }]}>Go to home screen</Text>
         </Link>
       </View>
     </View>

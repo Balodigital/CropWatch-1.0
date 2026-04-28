@@ -41,7 +41,7 @@ export default function SettingsScreen() {
       // Global guard in _layout.tsx will handle redirection to login
     } catch (error) {
       console.error('Logout error:', error);
-      Alert.alert('Error', 'Failed to sign out. Please try again.');
+      Alert.alert(t('common.error'), t('settings.error_logout'));
     }
   };
 
@@ -52,7 +52,7 @@ export default function SettingsScreen() {
       // Global guard in _layout.tsx will handle redirection to login
     } catch (error) {
       console.error('Sign out all error:', error);
-      Alert.alert('Error', 'Failed to sign out of all devices. Please try again.');
+      Alert.alert(t('common.error'), t('settings.error_signout_all'));
     }
   };
 
@@ -77,7 +77,7 @@ export default function SettingsScreen() {
             />
             <View style={styles.profileInfo}>
               <Text style={[tokens.typography.title, styles.profileName]}>
-                {profile?.full_name || user?.user_metadata?.full_name || 'CropWatch User'}
+                {profile?.full_name || user?.user_metadata?.full_name || t('settings.default_user')}
               </Text>
               <Text style={[tokens.typography.caption, styles.profileEmail]}>
                 {user?.email}
@@ -131,7 +131,7 @@ export default function SettingsScreen() {
         <SettingsItem
           icon="language"
           title={t('settings.language')}
-          value={currentLanguage === 'en' ? 'English' : 'Pidgin'}
+          subtitle={currentLanguage === 'en' ? 'English' : 'Pidgin'}
           onPress={() => router.push('/profile/language')}
         />
       </SettingsSection>
@@ -171,17 +171,17 @@ export default function SettingsScreen() {
           title={t('common.logout')}
           onPress={() => setLogoutModalVisible(true)}
           destructive
-          showChevron={false}
+          showArrow={false}
         />
       </SettingsSection>
 
       <View style={styles.footer}>
         <Text style={styles.versionText}>{t('settings.version')}</Text>
-        <Pressable onPress={() => Alert.alert('Update', 'You are using the latest version.')}>
+        <Pressable onPress={() => Alert.alert(t('settings.update_title'), t('settings.update_msg'))}>
           <Text style={[styles.footerText, { color: tokens.colors.primary500 }]}>{t('settings.check_updates')}</Text>
         </Pressable>
         <Text style={styles.footerText}>
-          Made with 💚 for Nigerian Farmers
+          {t('settings.made_with')}
         </Text>
       </View>
 

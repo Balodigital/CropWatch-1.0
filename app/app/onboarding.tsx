@@ -15,26 +15,27 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Camera, Cpu, ShieldCheck } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
 const ONBOARDING_DATA = [
   {
     id: '1',
-    title: 'Scan Your Crop',
-    description: 'Take a photo and describe the issue to identify potential diseases.',
+    titleKey: 'onboarding.slide1_title',
+    descriptionKey: 'onboarding.slide1_desc',
     icon: Camera,
   },
   {
     id: '2',
-    title: 'Get Instant Diagnosis',
-    description: 'Our AI analyzes and identifies crop diseases in seconds.',
+    titleKey: 'onboarding.slide2_title',
+    descriptionKey: 'onboarding.slide2_desc',
     icon: Cpu,
   },
   {
     id: '3',
-    title: 'Treat & Prevent',
-    description: 'Get affordable solutions and prevention tips to protect your harvest.',
+    titleKey: 'onboarding.slide3_title',
+    descriptionKey: 'onboarding.slide3_desc',
     icon: ShieldCheck,
   },
 ];
@@ -46,6 +47,7 @@ export default function OnboardingScreen() {
   const theme = Colors[colorScheme];
   const flatListRef = useRef<FlatList>(null);
   const { setOnboardingFinished } = useAuth();
+  const { t } = useTranslation();
 
   const handleNext = async () => {
     if (currentIndex < ONBOARDING_DATA.length - 1) {
@@ -73,10 +75,10 @@ export default function OnboardingScreen() {
         </View>
         <View style={styles.textContainer}>
           <Text style={[Typography.displaySmall, { color: theme.onSurface, textAlign: 'center' }]}>
-            {item.title}
+            {t(item.titleKey)}
           </Text>
           <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, textAlign: 'center', marginTop: 16 }]}>
-            {item.description}
+            {t(item.descriptionKey)}
           </Text>
         </View>
       </View>
@@ -87,7 +89,7 @@ export default function OnboardingScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-          <Text style={[Typography.labelLarge, { color: theme.primary }]}>Skip</Text>
+          <Text style={[Typography.labelLarge, { color: theme.primary }]}>{t('onboarding.skip')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -128,7 +130,7 @@ export default function OnboardingScreen() {
         </View>
 
         <Button
-          title={currentIndex === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+          title={currentIndex === ONBOARDING_DATA.length - 1 ? t('onboarding.get_started') : t('onboarding.next')}
           onPress={handleNext}
           style={styles.nextButton}
         />

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { StyleSheet, View, Text, ScrollView, Pressable, Image, Platform, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
@@ -17,9 +17,11 @@ export default function HomeScreen() {
   const { user, profile } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
 
-  useEffect(() => {
-    loadPendingCount();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadPendingCount();
+    }, [])
+  );
 
   const loadPendingCount = async () => {
     const count = await OfflineStorage.getPendingCount();
@@ -73,22 +75,25 @@ export default function HomeScreen() {
           <Text style={[styles.welcomeToText, { color: tokens.colors.primary800 }]}>Welcome to</Text>
           <Text style={[styles.welcomeBrandText, { color: '#2C6A4F' }]}>CropWatch</Text>
           <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
-            Identify crop diseases early{"\n"}and protect your harvest.
+            {t('dashboard.hero_desc').replace(' and ', '\nand ')}
           </Text>
         </View>
 
         <SearchBar />
-        <PendingScansCard count={3} />
+        <PendingScansCard 
+          count={pendingCount} 
+          onPress={() => router.push({ pathname: '/(tabs)/history', params: { filter: 'pending' } })} 
+        />
 
         <View style={styles.actionsSection}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
-            Quick Actions
+            {t('dashboard.quick_actions')}
           </Text>
           <View style={styles.actionsGrid}>
             <QuickActionCard
               icon="photo-camera"
-              title="Scan Leaf"
-              description="Take a photo of a crop leaf"
+              title={t('dashboard.actions.scan_title')}
+              description={t('dashboard.actions.scan_desc')}
               bgToken="success95"
               iconColor={tokens.colors.primary500}
               arrowBg={tokens.colors.success80}
@@ -96,8 +101,8 @@ export default function HomeScreen() {
             />
             <QuickActionCard
               icon="collections-bookmark"
-              title="Crop Library"
-              description="Learn about different crops"
+              title={t('dashboard.actions.library_title')}
+              description={t('dashboard.actions.library_desc')}
               bgToken="warning95"
               iconColor={tokens.colors.warning500}
               arrowBg={tokens.colors.warning80}
@@ -106,8 +111,8 @@ export default function HomeScreen() {
             />
             <QuickActionCard
               icon="lock-outline"
-              title="Chat with Expert"
-              description={"Get personalized\nadvice"}
+              title={t('dashboard.actions.chat_title')}
+              description={t('dashboard.actions.chat_desc').replace(' ', '\n')}
               isPremium
               bgToken="accent95"
               iconColor={tokens.colors.accent50}
@@ -117,8 +122,8 @@ export default function HomeScreen() {
             />
             <QuickActionCard
               icon="lightbulb-outline"
-              title="Tips"
-              description="Get helpful farming advice"
+              title={t('dashboard.actions.tips_title')}
+              description={t('dashboard.actions.tips_desc')}
               bgToken="tertiary95"
               iconColor={tokens.colors.tertiary700}
               arrowBg={tokens.colors.tertiary80}
@@ -130,11 +135,11 @@ export default function HomeScreen() {
 
         <View style={styles.insightSection}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
-            Weather Based Advice
+            {t('dashboard.weather.title')}
           </Text>
           <InsightCard 
-            text="Maize crops are more prone to leaf blight during humid conditions."
-            highlight="Monitor closely this week."
+            text={t('dashboard.weather.advice')}
+            highlight={t('dashboard.weather.highlight')}
             onPress={() => {}}
           />
         </View>
@@ -167,12 +172,13 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
 }
 
 function SearchBar() {
+  const { t } = useTranslation();
   return (
     <View style={styles.searchSection}>
       <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral200 }]}>
         <MaterialIcons name="search" size={24} color={tokens.colors.neutral700} />
         <TextInput
-          placeholder="Search crops, diseases, or symptoms..."
+          placeholder={t('dashboard.search_placeholder')}
           placeholderTextColor={tokens.colors.neutral700}
           style={styles.searchInput}
         />
@@ -181,21 +187,26 @@ function SearchBar() {
   );
 }
 
-function PendingScansCard({ count }: { count: number }) {
+function PendingScansCard({ count, onPress }: { count: number, onPress: () => void }) {
+  const { t } = useTranslation();
   if (count === 0) return null;
   
   return (
     <View style={styles.pendingSection}>
-      <TouchableOpacity style={[styles.pendingCard, { backgroundColor: '#FAEFEB' }]}>
+      <TouchableOpacity 
+        style={[styles.pendingCard, { backgroundColor: '#FAEFEB' }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
         <View style={styles.pendingIconContainer}>
           <MaterialIcons name="sync" size={24} color="#CC5A33" />
         </View>
         <View style={styles.pendingTextContainer}>
           <Text style={[styles.pendingTitle, { color: 'rgba(0,0,0,0.8)' }]}>
-            {count} pending scans
+            {count} {count === 1 ? t('dashboard.pending_scan') : t('dashboard.pending_scans')}
           </Text>
           <Text style={[styles.pendingSub, { color: 'rgba(0,0,0,0.6)' }]}>
-            Will sync automatically when back online.
+            {t('dashboard.sync_offline')}
           </Text>
         </View>
         <MaterialIcons name="chevron-right" size={24} color="#CC5A33" />
@@ -237,6 +248,7 @@ function ScanItem({ crop, status, time, image, onPress }: {
 }
 
 function AddScanItem({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity 
       style={[styles.addScanCard, { borderColor: tokens.colors.success500 }]} 
@@ -245,8 +257,8 @@ function AddScanItem({ onPress }: { onPress: () => void }) {
       <View style={[styles.addScanIconCircle, { backgroundColor: tokens.colors.success95 }]}>
         <MaterialIcons name="photo-camera" size={24} color={tokens.colors.primary500} />
       </View>
-      <Text style={[styles.addScanTitle, { color: tokens.colors.success500 }]}>Scan New Leaf</Text>
-      <Text style={[styles.addScanSub, { color: tokens.colors.textSecondary }]}>Start a new scan</Text>
+      <Text style={[styles.addScanTitle, { color: tokens.colors.success500 }]}>{t('dashboard.scan_new')}</Text>
+      <Text style={[styles.addScanSub, { color: tokens.colors.textSecondary }]}>{t('dashboard.start_new_scan')}</Text>
     </TouchableOpacity>
   );
 }

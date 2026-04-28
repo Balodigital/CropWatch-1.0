@@ -78,7 +78,7 @@ export default function CameraScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.container, { backgroundColor: tokens.colors.background }]}>
-        <AppHeader title="" showBack onBack={() => router.back()} />
+        <AppHeader title="" showBack />
         <View style={styles.permissionContainer}>
           <MaterialIcons name="camera-alt" size={80} color={tokens.colors.primary500} style={{ marginBottom: tokens.spacing.xl }} />
           <Text style={[tokens.typography.heading, { color: tokens.colors.text, marginBottom: tokens.spacing.md, textAlign: 'center' }]}>
@@ -116,8 +116,7 @@ export default function CameraScreen() {
           <AppHeader 
             title={t('scan.title')} 
             showBack 
-            onBack={() => router.back()}
-            rightAction={<View style={{ width: 40 }} />}
+            rightElement={<View style={{ width: 40 }} />}
           />
 
           <View style={styles.frameContainer}>

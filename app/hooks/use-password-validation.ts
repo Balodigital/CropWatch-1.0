@@ -11,11 +11,11 @@ export type StrengthLevel = 'Weak' | 'Medium' | 'Strong' | '';
 
 export const usePasswordValidation = (password: string) => {
   const [requirements, setRequirements] = useState<PasswordRequirement[]>([
-    { id: 'length', label: 'Minimum 8 characters', met: false, regex: /^.{8,}$/ },
-    { id: 'upper', label: 'At least 1 uppercase letter', met: false, regex: /[A-Z]/ },
-    { id: 'lower', label: 'At least 1 lowercase letter', met: false, regex: /[a-z]/ },
-    { id: 'number', label: 'At least 1 number', met: false, regex: /[0-9]/ },
-    { id: 'special', label: 'At least 1 special character', met: false, regex: /[^A-Za-z0-9]/ },
+    { id: 'length', label: 'auth.password.length', met: false, regex: /^.{8,}$/ },
+    { id: 'upper', label: 'auth.password.upper', met: false, regex: /[A-Z]/ },
+    { id: 'lower', label: 'auth.password.lower', met: false, regex: /[a-z]/ },
+    { id: 'number', label: 'auth.password.number', met: false, regex: /[0-9]/ },
+    { id: 'special', label: 'auth.password.special', met: false, regex: /[^A-Za-z0-9]/ },
   ]);
 
   const [strength, setStrength] = useState<StrengthLevel>('');

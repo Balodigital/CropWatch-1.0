@@ -1,15 +1,29 @@
 {
   "common": {
     "save": "Save Am",
-    "cancel": "Abeg Leave Am",
+    "cancel": "Cancel Am",
     "logout": "Comot",
-    "confirm": "I gree",
+    "confirm": "Make E Be",
     "loading": "E dey load...",
     "error": "Wahala dey",
     "success": "E don work",
     "back": "Go Back",
     "next": "Move Front",
     "done": "E Don Finish"
+  },
+  "splash": {
+    "subtitle": "Smart check for plant sickness"
+  },
+  "onboarding": {
+    "skip": "Pass Am",
+    "next": "Next",
+    "get_started": "Start Now",
+    "slide1_title": "Snap Your Crop",
+    "slide1_desc": "Take picture and tell us the wahala so we fit know the sickness.",
+    "slide2_title": "Get Answer Sharp Sharp",
+    "slide2_desc": "Our AI go check and tell you the crop sickness within seconds.",
+    "slide3_title": "Treat & Stop Am",
+    "slide3_desc": "Get cheap solutions and tips to protect your harvest."
   },
   "tabs": {
     "home": "Home",
@@ -34,7 +48,25 @@
     "early_detection_desc": "If you dey check your leaf regular, you fit save up to 80% of your harvest.",
     "pending_scan": "scan where never sync",
     "pending_scans": "scans where never sync",
-    "sync_offline": "E go sync automatically when you get network."
+    "sync_offline": "E go sync automatically when you get network.",
+    "search_placeholder": "Find crops, sickness, or signs...",
+    "scan_new": "Check New Leaf",
+    "start_new_scan": "Start new scan",
+    "actions": {
+      "scan_title": "Check Leaf",
+      "scan_desc": "Take picture of crop leaf",
+      "library_title": "Crop Library",
+      "library_desc": "Learn about other crops",
+      "chat_title": "Talk to Expert",
+      "chat_desc": "Get advice for your matter",
+      "tips_title": "Tips",
+      "tips_desc": "Get good farming advice"
+    },
+    "weather": {
+      "title": "Advice Based on Weather",
+      "advice": "Maize crops fit catch leaf blight quick when place dey wet.",
+      "highlight": "Check am well well this week."
+    }
   },
   "scan": {
     "title": "Check Leaf",
@@ -70,7 +102,12 @@
     "prevention_tips": "How to Stop Am Next Time",
     "empty_title": "We No See Wetin Dey Happen",
     "empty_desc": "We no fit identify the wahala well. Abeg take clearer picture or talk more about wetin happen.",
-    "analysis_error": "E no fit check am. Abeg try again."
+    "analysis_error": "E no fit check am. Abeg try again.",
+    "analysis_error_title": "Check No Work",
+    "analysis_failed": "E Fail to Check Am",
+    "generic_error": "Wahala happen when we dey check the scan.",
+    "try_tips": "Try do this one:",
+    "error_tips": "• Take clearer picture with good light\n• Make sure the leaf show well\n• Include the part where dey okay and the part where sick\n• Talk wetin you dey see"
   },
   "analyzing": {
     "status": "AI Dey Check Am...",
@@ -95,13 +132,19 @@
     "language": "Language",
     "support": "Help & Support",
     "faq": "FAQ",
-    "contact": "Talk to Us",
-    "terms": "Terms & Privacy Policy",
+    "contact": "Message Support",
+    "terms": "Terms & Privacy",
     "account_control": "Account Control",
-    "sign_out_all": "Comot for all phones",
-    "deactivate": "Delete My Account",
-    "version": "App ver 2.0.1",
-    "check_updates": "Check for updates",
+    "sign_out_all": "Comot for all devices",
+    "deactivate": "Close Account",
+    "version": "Version 1.0.0",
+    "check_updates": "Check for Updates",
+    "made_with": "We do am with 💚 for Nigerian Farmers",
+    "update_title": "Update",
+    "update_msg": "You dey use the latest one.",
+    "default_user": "CropWatch Farmer",
+    "error_logout": "E no fit comot. Try again.",
+    "error_signout_all": "E no fit comot for all devices. Try again.",
     "lang_description": "Choose the language where you wan use for CropWatch.",
     "lang_en": "English",
     "lang_pcm": "Nigerian Pidgin"
@@ -126,7 +169,57 @@
     "no_account": "You never get account?",
     "have_account": "You don get account before?",
     "login_failed": "E no fit enter",
-    "unexpected_error": "Wahala happen where we no expect."
+    "unexpected_error": "Wahala happen where we no expect.",
+    "register_title": "Create Account",
+    "register_desc": "Join CropWatch make you start to protect your harvest",
+    "full_name_label": "Full Name",
+    "full_name_placeholder": "Put your full name",
+    "email_placeholder": "Put your email",
+    "password_placeholder": "Create password",
+    "register_failed": "Account no gree create",
+    "success": {
+      "title": "Account Don Open",
+      "desc": "We don open your account. You fit enter now make you start to check your crops and see wetin AI talk.",
+      "continue": "Continue to Enter"
+    },
+    "forgot": {
+      "title": "You Forget Password?",
+      "desc": "Put your email and we go send you link make you set new password.",
+      "email_placeholder": "Put your registered email",
+      "send_link": "Send Reset Link",
+      "check_email": "Check Your Email",
+      "check_email_desc": "We don send link to {{email}}. Abeg check your email and click the link to set new password.",
+      "back_login": "Go Back to Enter"
+    },
+    "password": {
+      "length": "At least 8 letters",
+      "upper": "At least 1 big letter",
+      "lower": "At least 1 small letter",
+      "number": "At least 1 number",
+      "special": "At least 1 special sign",
+      "strength_label": "Password Power:",
+      "weak": "Weak",
+      "medium": "Manageable",
+      "strong": "Strong"
+    }
+  },
+  "language_screen": {
+    "title": "Choose Language",
+    "subtitle": "Choose the language where you wan use",
+    "english": "English",
+    "english_desc": "If you wan talk formal",
+    "pidgin": "Nigerian Pidgin",
+    "pidgin_desc": "Wetin you go yarn for farm"
+  },
+  "permissions": {
+    "required": "We need permission",
+    "title": "Camera Access",
+    "camera": "Camera",
+    "camera_desc": "Take pictures of your crop leaves",
+    "library": "Photo Library",
+    "library_desc": "Choose photo from phone",
+    "allow": "Allow Am",
+    "skip": "Pass am for now"
   },
   "modals": {
     "logout_title": "You wan comot?",
@@ -135,5 +228,36 @@
     "deactivate_message": "This one go delete all your data and you no fit get am back. You sure?",
     "sign_out_all_title": "Comot Everywhere",
     "sign_out_all_message": "This one go comot your account for all the phones where e dey."
+  },
+  "tips_screen": {
+    "title": "Farming Tips",
+    "search_placeholder": "Search for tips...",
+    "empty_title": "We no see any tip",
+    "empty_subtext": "Try search another thing or change wetin you select to find advice.",
+    "categories": {
+      "All": "All",
+      "Prevention": "How to Stop Am",
+      "Soil Health": "Soil Power",
+      "Watering": "Watering",
+      "Pest Control": "Pest Control",
+      "Harvesting": "Harvesting"
+    },
+    "tips": {
+      "tip1_title": "No pour water too much",
+      "tip1_desc": "Too much water fit spoil the root. Pour water only when the top sand don dry.",
+      "tip1_rel": "E good for rainy season",
+      "tip2_title": "Change crop where you dey plant",
+      "tip2_desc": "Change crop every year make the sand no weak and to chase pests away.",
+      "tip2_rel": "E dey very important for big harvest",
+      "tip3_title": "Check am early",
+      "tip3_desc": "Check your leaves every week make you fit see if color change or pest enter.",
+      "tip4_title": "Natural pest chase",
+      "tip4_desc": "Plant marigold near your tomatoes to naturally chase nematodes and other pests.",
+      "tip5_title": "Mulching",
+      "tip5_desc": "Put organic mulch make e hold water and balance the soil hotness.",
+      "tip5_rel": "E good for dry season",
+      "tip6_title": "Best time to harvest",
+      "tip6_desc": "Harvest early morning when water still dey inside so e go last longer."
+    }
   }
 }

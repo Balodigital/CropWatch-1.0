@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, Animated } from 'react-native';
 import { tokens } from '@/constants/tokens';
 import { Button } from './Button';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -20,10 +21,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   isDestructive = false,
 }) => {
+  const { t } = useTranslation();
+  
+  const finalConfirmLabel = confirmLabel || t('common.confirm', 'Confirm');
+  const finalCancelLabel = cancelLabel || t('common.cancel', 'Cancel');
+
   return (
     <Modal
       transparent
@@ -39,16 +45,16 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             
             <View style={styles.actions}>
               <Button 
-                title={cancelLabel} 
+                title={finalCancelLabel} 
                 onPress={onClose} 
                 variant="ghost" 
                 style={styles.button}
               />
               <Button 
-                title={confirmLabel} 
+                title={finalConfirmLabel} 
                 onPress={onConfirm} 
                 variant={isDestructive ? 'outline' : 'primary'}
-                style={[styles.button, isDestructive && styles.destructiveButton]}
+                style={[styles.button, isDestructive ? styles.destructiveButton : undefined] as any}
                 textStyle={isDestructive ? { color: tokens.colors.error500 } : undefined}
               />
             </View>

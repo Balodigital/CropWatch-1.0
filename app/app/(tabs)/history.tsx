@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { useState, useCallback } from 'react';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
   StyleSheet,
   View,
@@ -35,10 +35,13 @@ export default function HistoryScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { filter } = useLocalSearchParams<{ filter: string }>();
 
-  useEffect(() => {
-    loadHistory();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadHistory();
+    }, [])
+  );
 
   const loadHistory = async () => {
     const diagnosisCache = await OfflineStorage.getDiagnosisCache();
@@ -67,9 +70,13 @@ export default function HistoryScreen() {
       status: 'pending' as const,
     }));
 
-    const allHistory = [...pendingItems, ...completedItems].sort(
+    let allHistory = [...pendingItems, ...completedItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+    if (filter === 'pending') {
+      allHistory = allHistory.filter(item => item.status === 'pending');
+    }
 
     setHistory(allHistory);
   };
@@ -198,7 +205,7 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <AppHeader title={t('tabs.history')} showBack={false} />
+      <AppHeader title={filter === 'pending' ? 'Pending Scans' : t('tabs.history')} showBack={filter === 'pending'} />
       {history.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>📋</Text>

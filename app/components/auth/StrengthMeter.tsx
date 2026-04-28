@@ -4,6 +4,7 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { StrengthLevel } from '@/hooks/use-password-validation';
+import { useTranslation } from 'react-i18next';
 
 interface StrengthMeterProps {
   strength: StrengthLevel;
@@ -12,15 +13,16 @@ interface StrengthMeterProps {
 export const StrengthMeter: React.FC<StrengthMeterProps> = ({ strength }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { t } = useTranslation();
 
   const getStrengthConfig = () => {
     switch (strength) {
       case 'Weak':
-        return { color: theme.error, percentage: 33, label: 'Weak' };
+        return { color: theme.error, percentage: 33, label: t('auth.password.weak') };
       case 'Medium':
-        return { color: theme.warning, percentage: 66, label: 'Medium' };
+        return { color: theme.warning, percentage: 66, label: t('auth.password.medium') };
       case 'Strong':
-        return { color: theme.success, percentage: 100, label: 'Strong' };
+        return { color: theme.success, percentage: 100, label: t('auth.password.strong') };
       default:
         return { color: theme.muted, percentage: 0, label: '' };
     }
@@ -34,7 +36,7 @@ export const StrengthMeter: React.FC<StrengthMeterProps> = ({ strength }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={[Typography.labelSmall, { color: theme.onSurfaceVariant }]}>
-          Password Strength:
+          {t('auth.password.strength_label')}
         </Text>
         <Text style={[Typography.labelSmall, { color: config.color, fontWeight: '700' }]}>
           {config.label}

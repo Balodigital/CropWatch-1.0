@@ -195,14 +195,7 @@ export default function ResultScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.newScanLink}
-          onPress={handleNewScan}
-        >
-          <Text style={[styles.newScanLinkText, { color: tokens.colors.textSecondary }]}>
-            {t('common.new_scan') || 'Start New Scan'}
-          </Text>
-        </TouchableOpacity>
+
       </View>
     </View>
   );
@@ -373,14 +366,5 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  newScanLink: {
-    alignItems: 'center',
-    padding: tokens.spacing.xs,
-  },
-  newScanLinkText: {
-    fontSize: 14,
-    fontWeight: '500',
-    textDecorationLine: 'underline',
   },
 });

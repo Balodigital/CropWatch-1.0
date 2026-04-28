@@ -4,6 +4,7 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PasswordRequirement } from '@/hooks/use-password-validation';
+import { useTranslation } from 'react-i18next';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -16,6 +17,7 @@ interface PasswordRequirementsProps {
 export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ requirements }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { t } = useTranslation();
 
   const unmetRequirements = requirements.filter(req => !req.met);
 
@@ -38,7 +40,7 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ requ
               { color: theme.onSurfaceVariant }
             ]}
           >
-            {req.label}
+            {t(req.label)}
           </Text>
         </View>
       ))}

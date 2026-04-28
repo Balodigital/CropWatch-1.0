@@ -15,6 +15,20 @@
     "retry": "Try Again",
     "go_home": "Go to Home"
   },
+  "splash": {
+    "subtitle": "Smart crop disease detection"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "get_started": "Get Started",
+    "slide1_title": "Scan Your Crop",
+    "slide1_desc": "Take a photo and describe the issue to identify potential diseases.",
+    "slide2_title": "Get Instant Diagnosis",
+    "slide2_desc": "Our AI analyzes and identifies crop diseases in seconds.",
+    "slide3_title": "Treat & Prevent",
+    "slide3_desc": "Get affordable solutions and prevention tips to protect your harvest."
+  },
   "tabs": {
     "home": "Home",
     "library": "Library",
@@ -38,7 +52,25 @@
     "early_detection_desc": "Regular leaf scanning can prevent up to 80% of crop losses in the early stages of disease.",
     "pending_scan": "pending scan",
     "pending_scans": "pending scans",
-    "sync_offline": "Will sync automatically when back online."
+    "sync_offline": "Will sync automatically when back online.",
+    "search_placeholder": "Search crops, diseases, or symptoms...",
+    "scan_new": "Scan New Leaf",
+    "start_new_scan": "Start a new scan",
+    "actions": {
+      "scan_title": "Scan Leaf",
+      "scan_desc": "Take a photo of a crop leaf",
+      "library_title": "Crop Library",
+      "library_desc": "Learn about different crops",
+      "chat_title": "Chat with Expert",
+      "chat_desc": "Get personalized advice",
+      "tips_title": "Tips",
+      "tips_desc": "Get helpful farming advice"
+    },
+    "weather": {
+      "title": "Weather Based Advice",
+      "advice": "Maize crops are more prone to leaf blight during humid conditions.",
+      "highlight": "Monitor closely this week."
+    }
   },
   "scan": {
     "title": "Scan Leaf",
@@ -106,12 +138,17 @@
     "support": "Help & Support",
     "faq": "FAQ",
     "contact": "Contact Support",
-    "terms": "Terms & Privacy Policy",
+    "terms": "Terms & Privacy",
     "account_control": "Account Control",
-    "sign_out_all": "Sign out of all devices",
-    "deactivate": "Deactivate Account",
-    "version": "App ver 2.0.1",
-    "check_updates": "Check for updates",
+    "sign_out_all": "Sign Out of All Devices",
+    "version": "Version 1.0.0",
+    "check_updates": "Check for Updates",
+    "made_with": "Made with 💚 for Nigerian Farmers",
+    "update_title": "Update",
+    "update_msg": "You are using the latest version.",
+    "default_user": "CropWatch User",
+    "error_logout": "Failed to sign out. Please try again.",
+    "error_signout_all": "Failed to sign out of all devices. Please try again.",
     "lang_description": "Choose your preferred language for the CropWatch app.",
     "lang_en": "English",
     "lang_pcm": "Nigerian Pidgin"
@@ -136,7 +173,57 @@
     "no_account": "Don't have an account?",
     "have_account": "Already have an account?",
     "login_failed": "Sign In Failed",
-    "unexpected_error": "An unexpected error occurred."
+    "unexpected_error": "An unexpected error occurred.",
+    "register_title": "Create Account",
+    "register_desc": "Join CropWatch and start protecting your harvest",
+    "full_name_label": "Full Name",
+    "full_name_placeholder": "Enter your full name",
+    "email_placeholder": "Enter your email",
+    "password_placeholder": "Create a password",
+    "register_failed": "Sign Up Failed",
+    "success": {
+      "title": "Account Created Successfully",
+      "desc": "Your account has been created. You can now sign in to start monitoring your crops and getting AI diagnoses.",
+      "continue": "Continue to Sign In"
+    },
+    "forgot": {
+      "title": "Forgot Password",
+      "desc": "Enter your email and we'll send you a secure link to reset your password.",
+      "email_placeholder": "Enter your registered email",
+      "send_link": "Send Reset Link",
+      "check_email": "Check Your Email",
+      "check_email_desc": "We've sent password reset instructions to {{email}}. Please check your inbox and follow the link to reset your password.",
+      "back_login": "Back to Sign In"
+    },
+    "password": {
+      "length": "Minimum 8 characters",
+      "upper": "At least 1 uppercase letter",
+      "lower": "At least 1 lowercase letter",
+      "number": "At least 1 number",
+      "special": "At least 1 special character",
+      "strength_label": "Password Strength:",
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong"
+    }
+  },
+  "language_screen": {
+    "title": "Choose Your Language",
+    "subtitle": "Choose your preferred language",
+    "english": "English",
+    "english_desc": "For formal communication",
+    "pidgin": "Nigerian Pidgin",
+    "pidgin_desc": "Wetin you go yarn for farm"
+  },
+  "permissions": {
+    "required": "Permission Required",
+    "title": "Camera Access",
+    "camera": "Camera",
+    "camera_desc": "Take photos of your crop leaves",
+    "library": "Photo Library",
+    "library_desc": "Select existing photos",
+    "allow": "Allow Access",
+    "skip": "Skip for Now"
   },
   "modals": {
     "logout_title": "Confirm Logout",
@@ -145,5 +232,36 @@
     "deactivate_message": "This action is permanent and will delete all your data. Are you absolutely sure?",
     "sign_out_all_title": "Sign Out Everywhere",
     "sign_out_all_message": "This will log you out of all devices currently using this account."
+  },
+  "tips_screen": {
+    "title": "Farming Tips",
+    "search_placeholder": "Search tips...",
+    "empty_title": "No tips found",
+    "empty_subtext": "Try adjusting your search or filters to find farming advice.",
+    "categories": {
+      "All": "All",
+      "Prevention": "Prevention",
+      "Soil Health": "Soil Health",
+      "Watering": "Watering",
+      "Pest Control": "Pest Control",
+      "Harvesting": "Harvesting"
+    },
+    "tips": {
+      "tip1_title": "Avoid Overwatering",
+      "tip1_desc": "Too much water can lead to root rot. Water only when the top inch of soil is dry.",
+      "tip1_rel": "Best for rainy season",
+      "tip2_title": "Crop Rotation",
+      "tip2_desc": "Rotate crops annually to prevent soil depletion and break pest cycles.",
+      "tip2_rel": "Crucial for long-term yield",
+      "tip3_title": "Early Detection",
+      "tip3_desc": "Inspect leaves weekly for early signs of discoloration or pests.",
+      "tip4_title": "Natural Pest Repellents",
+      "tip4_desc": "Plant marigolds near tomatoes to naturally deter nematodes and other pests.",
+      "tip5_title": "Mulching",
+      "tip5_desc": "Apply organic mulch to retain moisture and regulate soil temperature.",
+      "tip5_rel": "Great for dry seasons",
+      "tip6_title": "Optimal Harvesting Time",
+      "tip6_desc": "Harvest in the early morning when moisture content is highest for better shelf life."
+    }
   }
 }

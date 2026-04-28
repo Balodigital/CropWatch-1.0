@@ -30,7 +30,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               <MaterialIcons name="arrow-back-ios" size={20} color={tokens.colors.primary500} />
             </TouchableOpacity>
           )}
-          <Text style={[tokens.typography.headlineSmall, styles.title]}>{title}</Text>
+          <Text style={[tokens.typography.heading, styles.title]}>{title}</Text>
         </View>
         <View style={styles.rightSection}>
           {rightElement}
