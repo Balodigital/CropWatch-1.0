@@ -8,7 +8,7 @@ const API_PORT = 3000;
 const isWin = process.platform === 'win32';
 const npxCmd = isWin ? 'npx.cmd' : 'npx';
 
-console.log('🌱 Starting CropWatch Tunnel Sync via Cloudflare...');
+console.log('🌱 Starting CropWatch Tunnel Fallback via Localtunnel...');
 
 // Function to update .env file
 function updateAppEnv(url) {
@@ -31,41 +31,38 @@ function updateAppEnv(url) {
   console.log(`✅ Updated app/.env with API URL: ${url}`);
 }
 
-// Start Cloudflare Tunnel for the API
+// Start Localtunnel for the API
 console.log(`📡 Opening tunnel for API on port ${API_PORT}...`);
-const tunnelProcess = spawn(npxCmd, ['cloudflared', 'tunnel', '--url', `http://127.0.0.1:${API_PORT}`], {
+const ltProcess = spawn(npxCmd, ['lt', '--port', API_PORT.toString()], {
   shell: true
 });
 
 let apiUrlFound = false;
 
-tunnelProcess.stderr.on('data', (data) => {
+ltProcess.stdout.on('data', (data) => {
   const output = data.toString();
-  // Match Cloudflare tunnel URL, specifically looking for the random subdomain
-  const match = output.match(/https:\/\/[a-z0-9-]{10,}\.trycloudflare\.com/);
+  // Match Localtunnel URL
+  const match = output.match(/https:\/\/[a-z0-9-]+\.loca\.lt/);
   
-  if (match && !apiUrlFound && !match[0].includes('api.trycloudflare.com')) {
+  if (match && !apiUrlFound) {
     const url = match[0];
     apiUrlFound = true;
     console.log(`🌐 API Tunnel Live: ${url}`);
     updateAppEnv(url);
-    console.log('\n🚀 Step 2: Now run this in another terminal:');
-    console.log('   npm run tunnel:app');
+    console.log('\n🚀 Step 2: Now restart your Expo terminal.');
     console.log('\n(Keep this terminal open to maintain the backend link)');
-  }
-
-  if (output.includes('ERR')) {
-    console.error(`❌ Tunnel Error: ${output.trim()}`);
   }
 });
 
-tunnelProcess.on('close', (code) => {
+ltProcess.stderr.on('data', (data) => {
+  console.error(`❌ Tunnel Error: ${data.toString().trim()}`);
+});
+
+ltProcess.on('close', (code) => {
   console.log(`📡 Tunnel closed with code ${code}`);
 });
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
-  tunnelProcess.kill();
+  ltProcess.kill();
   process.exit();
 });
-

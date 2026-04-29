@@ -30,6 +30,7 @@ interface HistoryItem {
   diagnosis: Diagnosis[];
   createdAt: string;
   status: 'completed' | 'pending' | 'failed';
+  timestamp: number;
 }
 
 export default function HistoryScreen() {
@@ -48,19 +49,21 @@ export default function HistoryScreen() {
 
     const completedItems: HistoryItem[] = Object.entries(diagnosisCache).map(
       ([id, data]) => {
-        const pending = pendingScans.find((s) => s.id === id);
         return {
           id,
-          cropType: pending?.cropType || 'Crop',
+          cropType: data.cropType || 'Crop',
           cropIcon: '', // Not used anymore
           diagnosis: data.diagnosis,
           createdAt: new Date(data.timestamp).toLocaleDateString(),
           status: 'completed' as const,
+          timestamp: data.timestamp,
         };
       }
     );
 
-    const pendingItems: HistoryItem[] = pendingScans.map((scan) => ({
+    const pendingItems: HistoryItem[] = pendingScans
+      .filter(scan => !diagnosisCache[scan.id]) // Filter out already synced items
+      .map((scan) => ({
       id: scan.id,
       cropType: scan.cropType,
       cropIcon: '', // Not used anymore
@@ -69,10 +72,24 @@ export default function HistoryScreen() {
       diagnosis: [],
       createdAt: new Date(scan.timestamp).toLocaleDateString(),
       status: 'pending' as const,
+      timestamp: scan.timestamp,
     }));
 
-    let allHistory = [...pendingItems, ...completedItems].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    // De-duplicate by ID (History items take precedence over Pending)
+    const historyMap = new Map<string, HistoryItem>();
+    
+    // Add completed items first
+    completedItems.forEach(item => historyMap.set(item.id, item));
+    
+    // Add pending items only if not already completed
+    pendingItems.forEach(item => {
+      if (!historyMap.has(item.id)) {
+        historyMap.set(item.id, item);
+      }
+    });
+
+    let allHistory = Array.from(historyMap.values()).sort(
+      (a, b) => b.timestamp - a.timestamp
     );
 
     setHistory(allHistory);

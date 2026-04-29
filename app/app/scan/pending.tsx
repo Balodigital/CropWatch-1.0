@@ -29,6 +29,7 @@ interface HistoryItem {
   diagnosis: Diagnosis[];
   createdAt: string;
   status: 'completed' | 'pending' | 'failed';
+  timestamp: number;
 }
 
 export default function PendingScansScreen() {
@@ -53,10 +54,11 @@ export default function PendingScansScreen() {
       diagnosis: [],
       createdAt: new Date(scan.timestamp).toLocaleDateString(),
       status: 'pending' as const,
+      timestamp: scan.timestamp,
     }));
 
     const allHistory = pendingItems.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => b.timestamp - a.timestamp
     );
 
     setHistory(allHistory);

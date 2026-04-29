@@ -11,7 +11,7 @@ const getApiBaseUrl = () => {
   return url.endsWith('/api') ? url : `${url}/api`;
 };
 
-const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl();
 
 export interface DiagnosisResult {
   success: boolean;
@@ -32,70 +32,85 @@ export async function submitDiagnosis(
     return { success: false, error: errors.join(', ') };
   }
 
-  const isOnline = await OfflineStorage.isOnline();
-
-  if (!isOnline) {
-    const pendingScanId = `offline_${Date.now()}`;
-    await OfflineStorage.savePendingScan({
-      id: pendingScanId,
-      imageBase64,
-      description: cleanDesc,
-      cropType,
-      timestamp: Date.now(),
-    });
-    return {
-      success: true,
-      offline: true,
-      pendingScanId,
-      diagnosis: [],
-    };
-  }
-
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
     const response = await fetch(`${API_BASE_URL}/diagnose`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         image_base64: imageBase64,
         description: cleanDesc,
         crop_type: cropType,
       }),
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
+      console.warn(`[API] Server returned ${response.status} for ${API_BASE_URL}/diagnose`);
       const errorData = await response.json().catch(() => ({}));
+      
+      // If it's a server error, tunnel issue, or unreachable, save to offline
+      // We only return success: false for 400 (Validation) or 401 (Auth)
+      if (response.status >= 500 || response.status === 404 || response.status === 530) {
+        const pendingScanId = `offline_${Date.now()}`;
+        try {
+          await OfflineStorage.savePendingScan({
+            id: pendingScanId,
+            imageBase64,
+            description: cleanDesc,
+            cropType,
+            timestamp: Date.now(),
+          });
+          return {
+            success: true,
+            offline: true,
+            pendingScanId,
+            diagnosis: [],
+          };
+        } catch (storageError) {
+          return { 
+            success: false, 
+            error: "Device storage is full. Please clear some space to save scans offline." 
+          };
+        }
+      }
+
       return { 
         success: false, 
-        error: errorData.error || `Server error (${response.status}). Check if API tunnel is active.` 
+        error: errorData.error || `Server error (${response.status}).` 
       };
     }
 
     const data = await response.json();
     return { success: true, diagnosis: data.diagnosis };
   } catch (error) {
-    const isStillOnline = await OfflineStorage.isOnline();
-    
-    if (isStillOnline) {
+    console.error(`[API] Connection failed to ${API_BASE_URL}/diagnose:`, error);
+    // If any connection error happens, we treat it as offline mode
+    const pendingScanId = `offline_${Date.now()}`;
+    try {
+      await OfflineStorage.savePendingScan({
+        id: pendingScanId,
+        imageBase64,
+        description: cleanDesc,
+        cropType,
+        timestamp: Date.now(),
+      });
+
+      return {
+        success: true,
+        offline: true,
+        pendingScanId,
+        diagnosis: [],
+      };
+    } catch (storageError) {
       return { 
         success: false, 
-        error: "Could not connect to the diagnosis server. Please check if the API tunnel is active." 
+        error: "Connection failed and could not save offline. Device storage might be full." 
       };
     }
-
-    const pendingScanId = `offline_${Date.now()}`;
-    await OfflineStorage.savePendingScan({
-      id: pendingScanId,
-      imageBase64,
-      description: cleanDesc,
-      cropType,
-      timestamp: Date.now(),
-    });
-    return {
-      success: true,
-      offline: true,
-      pendingScanId,
-      diagnosis: [],
-    };
   }
 }
 
@@ -111,19 +126,28 @@ export async function syncPendingScans(): Promise<{ synced: number; failed: numb
 
   for (const scan of pending) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(`${API_BASE_URL}/diagnose`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           image_base64: scan.imageBase64,
           description: scan.description,
           crop_type: scan.cropType,
         }),
       });
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
-        await OfflineStorage.cacheDiagnosis(scan.id, data.diagnosis);
+        // Check if already in cache to prevent duplicates
+        const cache = await OfflineStorage.getDiagnosisCache();
+        if (!cache[scan.id]) {
+          await OfflineStorage.cacheDiagnosis(scan.id, data.diagnosis, scan.cropType);
+        }
         await OfflineStorage.removePendingScan(scan.id);
         synced++;
       } else {

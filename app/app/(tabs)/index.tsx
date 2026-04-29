@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Avatar } from '@/components/profile/Avatar';
 import { CROP_IMAGES } from '@/lib/supabase';
+import { syncPendingScans } from '@/lib/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
   const [pendingCount, setPendingCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -28,6 +30,14 @@ export default function HomeScreen() {
   );
 
   const loadData = async () => {
+    // Try to sync if online and not already syncing
+    const isOnline = await OfflineStorage.isOnline();
+    if (isOnline && !isSyncing) {
+      setIsSyncing(true);
+      await syncPendingScans();
+      setIsSyncing(false);
+    }
+
     const count = await OfflineStorage.getPendingCount();
     setPendingCount(count);
     
@@ -132,7 +142,7 @@ export default function HomeScreen() {
               iconColor={tokens.colors.accent50}
               arrowBg={tokens.colors.accent80}
               arrowIconColor={tokens.colors.accent700}
-              onPress={() => {}}
+              onPress={() => router.push('/chats')}
             />
             <QuickActionCard
               icon="lightbulb-outline"

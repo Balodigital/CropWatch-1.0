@@ -27,11 +27,7 @@ export default function ResultScreen() {
   const diagnoses: Diagnosis[] = diagnosis ? JSON.parse(diagnosis) : [];
 
   useEffect(() => {
-    if (diagnoses.length > 0) {
-      const topDiagnosis = diagnoses[0];
-      const scanId = `scan_${Date.now()}`;
-      OfflineStorage.cacheDiagnosis(scanId, diagnoses);
-    }
+    // No saving here anymore to prevent duplication when viewing old results
   }, []);
 
   const getSeverityColor = (severity: string) => {

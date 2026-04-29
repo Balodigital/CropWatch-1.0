@@ -85,13 +85,17 @@ export default function AnalyzingScreen() {
               cropType,
             },
           });
-        } else {
+        } else if (result.diagnosis) {
+          // Save to history once here
+          const scanId = `scan_${Date.now()}`;
+          await OfflineStorage.cacheDiagnosis(scanId, result.diagnosis, cropType || 'Crop');
+
           router.replace({
             pathname: '/result',
             params: {
               diagnosis: JSON.stringify(result.diagnosis),
               cropType,
-              image,
+              image: finalImage,
             },
           });
         }

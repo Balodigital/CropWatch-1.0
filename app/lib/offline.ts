@@ -46,9 +46,9 @@ export const OfflineStorage = {
     return data ? JSON.parse(data) : null;
   },
 
-  async cacheDiagnosis(scanId: string, diagnosis: Diagnosis[]): Promise<void> {
+  async cacheDiagnosis(scanId: string, diagnosis: Diagnosis[], cropType: string): Promise<void> {
     const cache = await this.getDiagnosisCache();
-    cache[scanId] = { diagnosis, timestamp: Date.now() };
+    cache[scanId] = { diagnosis, cropType, timestamp: Date.now() };
     await AsyncStorage.setItem(DIAGNOSIS_CACHE_KEY, JSON.stringify(cache));
   },
 
@@ -57,7 +57,7 @@ export const OfflineStorage = {
     return cache[scanId]?.diagnosis || null;
   },
 
-  async getDiagnosisCache(): Promise<Record<string, { diagnosis: Diagnosis[]; timestamp: number }>> {
+  async getDiagnosisCache(): Promise<Record<string, { diagnosis: Diagnosis[]; cropType: string; timestamp: number }>> {
     const data = await AsyncStorage.getItem(DIAGNOSIS_CACHE_KEY);
     return data ? JSON.parse(data) : {};
   },
@@ -71,6 +71,24 @@ export const OfflineStorage = {
   async isOnline(): Promise<boolean> {
     const networkState = await Network.getNetworkStateAsync();
     return (networkState.isConnected && networkState.isInternetReachable) ?? false;
+  },
+  
+  async checkServerHealth(apiUrl: string): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      // Try to hit the root health endpoint (not the /api/diagnose one)
+      // Remove /api from the end to get the base server URL
+      const baseServerUrl = apiUrl.replace(/\/api$/, '');
+      const response = await fetch(`${baseServerUrl}/health`, { 
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      return response.ok;
+    } catch (e) {
+      return false;
+    }
   },
 
   async clearAll(): Promise<void> {
