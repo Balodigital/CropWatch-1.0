@@ -146,7 +146,7 @@ export default function SettingsScreen() {
         <SettingsItem
           icon="headset-mic"
           title={t('settings.contact')}
-          onPress={() => Linking.openURL('mailto:support@cropwatch.app')}
+          onPress={() => router.push('/support')}
         />
         <SettingsItem
           icon="description"

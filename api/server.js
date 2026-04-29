@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const diagnoseRouter = require('./routes/diagnose');
 const authRouter = require('./routes/auth');
+const supportRouter = require('./routes/support');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/diagnose', diagnoseRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/support', supportRouter);
 
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);

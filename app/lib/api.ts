@@ -160,3 +160,52 @@ export async function syncPendingScans(): Promise<{ synced: number; failed: numb
 
   return { synced, failed };
 }
+
+export interface SupportMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export async function sendSupportChatMessage(messages: SupportMessage[]): Promise<{ content: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/support/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error (${response.status})`);
+    }
+
+    const data = await response.json();
+    return { content: data.content };
+  } catch (error: any) {
+    console.error('[API] Support chat failed:', error);
+    return { content: '', error: error.message };
+  }
+}
+
+export async function submitSupportTicket(ticketData: { 
+  summary: string; 
+  description: string; 
+  screenshot?: string 
+}): Promise<{ success: boolean; ticketId?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/support/ticket`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ticketData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error (${response.status})`);
+    }
+
+    const data = await response.json();
+    return { success: true, ticketId: data.ticketId };
+  } catch (error: any) {
+    console.error('[API] Ticket submission failed:', error);
+    return { success: false, error: error.message };
+  }
+}

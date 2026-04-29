@@ -7,17 +7,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
   title: string;
+  subtitle?: string;
   showBack?: boolean;
+  onBack?: () => void;
   rightElement?: React.ReactNode;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ 
   title, 
+  subtitle,
   showBack = true,
+  onBack,
   rightElement
 }) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <View style={[styles.outerContainer, { paddingTop: insets.top }]}>
@@ -25,14 +37,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <View style={styles.leftSection}>
           {showBack && (
             <TouchableOpacity 
-              onPress={() => router.back()} 
+              onPress={handleBack} 
               style={styles.backButton}
               activeOpacity={0.7}
             >
               <MaterialIcons name="arrow-back-ios" size={20} color={tokens.colors.primary500} />
             </TouchableOpacity>
           )}
-          <Text style={[tokens.typography.heading, styles.title]}>{title}</Text>
+          <View>
+            <Text style={[tokens.typography.heading, styles.title]}>{title}</Text>
+            {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          </View>
         </View>
         <View style={styles.rightSection}>
           {rightElement}
@@ -77,5 +92,10 @@ const styles = StyleSheet.create({
     color: tokens.colors.text,
     fontSize: 20,
     fontWeight: '700',
+  },
+  subtitle: {
+    color: tokens.colors.textSecondary,
+    fontSize: 12,
+    marginTop: -2,
   },
 });
