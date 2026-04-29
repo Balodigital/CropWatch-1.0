@@ -103,7 +103,7 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <SearchBar history={history} />
+        <SearchBar history={history} onRefresh={loadData} />
         <PendingScansCard 
           count={pendingCount} 
           onPress={() => router.push('/scan/pending')} 
@@ -195,7 +195,7 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
   );
 }
 
-function SearchBar({ history }: { history: any[] }) {
+function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -203,12 +203,22 @@ function SearchBar({ history }: { history: any[] }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleSearch = (text: string) => {
+    const trimmedText = text.trim();
     setQuery(text);
-    if (text.length > 0) {
+    
+    if (trimmedText.length > 0) {
       const filtered = history.reduce((acc: any[], item) => {
-        const cropMatch = item.cropType.toLowerCase().includes(text.toLowerCase());
+        const cropType = item.cropType.toLowerCase();
+        const searchTerm = trimmedText.toLowerCase();
+        
+        const cropMatch = cropType.includes(searchTerm);
+        const cropStarts = cropType.startsWith(searchTerm);
+        
+        // Search in diagnosis names AND descriptions/symptoms if they exist
         const diseaseMatches = item.diagnosis.filter((d: any) => 
-          d.name.toLowerCase().includes(text.toLowerCase())
+          d.name.toLowerCase().includes(searchTerm) || 
+          (d.treatment && d.treatment.toLowerCase().includes(searchTerm)) ||
+          (d.prevention && d.prevention.toLowerCase().includes(searchTerm))
         );
 
         if (cropMatch || diseaseMatches.length > 0) {
@@ -217,16 +227,28 @@ function SearchBar({ history }: { history: any[] }) {
             cropType: item.cropType,
             diagnosis: item.diagnosis,
             display: cropMatch ? item.cropType : diseaseMatches[0].name,
-            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : item.cropType
+            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : (diseaseMatches.length > 0 ? item.cropType : 'Previous Scan'),
+            matchType: cropMatch ? 'crop' : 'disease',
+            priority: cropStarts ? 2 : (cropMatch ? 1 : 0)
           });
         }
         return acc;
       }, []);
-      setSuggestions(filtered.slice(0, 5));
+
+      // Sort by priority (exact/starts-with first)
+      const sorted = filtered.sort((a: any, b: any) => b.priority - a.priority);
+      
+      setSuggestions(sorted.slice(0, 6));
       setShowSuggestions(true);
     } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
+      // If empty query, show recent 3 items as suggestions
+      setSuggestions(history.slice(0, 3).map(item => ({
+        ...item,
+        display: item.cropType,
+        subDisplay: item.diagnosis[0]?.name || 'No disease detected',
+        matchType: 'recent'
+      })));
+      setShowSuggestions(true);
     }
   };
 
@@ -243,6 +265,12 @@ function SearchBar({ history }: { history: any[] }) {
     });
   };
 
+  const handleClearHistory = async () => {
+    await OfflineStorage.clearDiagnosisCache();
+    setShowSuggestions(false);
+    onRefresh();
+  };
+
   return (
     <View style={styles.searchSection}>
       <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral200 }]}>
@@ -253,18 +281,32 @@ function SearchBar({ history }: { history: any[] }) {
           style={styles.searchInput}
           value={query}
           onChangeText={handleSearch}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          onFocus={() => query.length > 0 && setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
+          onFocus={() => handleSearch(query)}
+          underlineColorAndroid="transparent"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         {query.length > 0 && (
-          <TouchableOpacity onPress={() => handleSearch('')}>
+          <TouchableOpacity onPress={() => { setQuery(''); handleSearch(''); }}>
             <MaterialIcons name="close" size={20} color={tokens.colors.neutral700} />
           </TouchableOpacity>
         )}
       </View>
 
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (suggestions.length > 0 || history.length > 0) && (
         <View style={styles.suggestionsContainer}>
+          <View style={styles.suggestionsHeader}>
+            <Text style={styles.suggestionsHeaderText}>
+              {query.length > 0 ? 'Search Results' : 'Recent Searches'}
+            </Text>
+            {history.length > 0 && (
+              <TouchableOpacity onPress={handleClearHistory}>
+                <Text style={styles.clearHistoryText}>Clear All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
           {suggestions.map((item, index) => (
             <TouchableOpacity 
               key={item.id} 
@@ -274,13 +316,27 @@ function SearchBar({ history }: { history: any[] }) {
               ]}
               onPress={() => selectSuggestion(item)}
             >
-              <MaterialIcons name="history" size={20} color={tokens.colors.neutral500} style={{ marginRight: 12 }} />
-              <View>
+              <View style={[styles.suggestionIconBg, { backgroundColor: item.matchType === 'disease' ? tokens.colors.accent95 : tokens.colors.success95 }]}>
+                <MaterialIcons 
+                  name={item.matchType === 'disease' ? 'coronavirus' : 'eco'} 
+                  size={18} 
+                  color={item.matchType === 'disease' ? tokens.colors.accent700 : tokens.colors.primary500} 
+                />
+              </View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.suggestionTitle}>{item.display}</Text>
                 <Text style={styles.suggestionSub}>{item.subDisplay}</Text>
               </View>
+              <MaterialIcons name="chevron-right" size={20} color={tokens.colors.neutral400} />
             </TouchableOpacity>
           ))}
+
+          {query.length > 0 && suggestions.length === 0 && (
+            <View style={styles.noResultsContainer}>
+              <MaterialIcons name="search-off" size={40} color={tokens.colors.neutral300} />
+              <Text style={styles.noResultsText}>No matches found for "{query}"</Text>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -480,6 +536,8 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     marginBottom: tokens.spacing.xl,
+    zIndex: 100,
+    elevation: 10,
   },
   searchBar: {
     flexDirection: 'row',
@@ -492,34 +550,80 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.surface,
     borderRadius: tokens.radius.lg,
     marginTop: tokens.spacing.xs,
-    padding: tokens.spacing.xs,
-    ...tokens.elevation.level2,
+    paddingVertical: tokens.spacing.xs,
+    ...tokens.elevation.level3,
     position: 'absolute',
     top: 58,
     left: 0,
     right: 0,
-    zIndex: 100,
+    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: tokens.colors.neutral100,
+  },
+  suggestionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.colors.neutral100,
+  },
+  suggestionsHeaderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: tokens.colors.neutral500,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  clearHistoryText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: tokens.colors.accent700,
   },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: tokens.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: tokens.colors.neutral100,
+    borderBottomColor: tokens.colors.neutral50,
+  },
+  suggestionIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   suggestionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: tokens.colors.text,
   },
   suggestionSub: {
     fontSize: 12,
     color: tokens.colors.textSecondary,
+    marginTop: 2,
+  },
+  noResultsContainer: {
+    padding: tokens.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noResultsText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: tokens.colors.neutral500,
+    textAlign: 'center',
   },
   searchInput: {
     flex: 1,
     marginLeft: tokens.spacing.sm,
     fontSize: 14,
+    borderWidth: 0,
+    // @ts-ignore - outlineStyle is for web
+    outlineStyle: 'none',
   },
   searchButton: {
     width: 36,

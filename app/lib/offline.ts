@@ -91,6 +91,10 @@ export const OfflineStorage = {
     }
   },
 
+  async clearDiagnosisCache(): Promise<void> {
+    await AsyncStorage.removeItem(DIAGNOSIS_CACHE_KEY);
+  },
+
   async clearAll(): Promise<void> {
     await AsyncStorage.multiRemove([PENDING_SCANS_KEY, USER_PREFERENCES_KEY, DIAGNOSIS_CACHE_KEY]);
   },
