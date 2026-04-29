@@ -12,11 +12,13 @@ import { Avatar } from '@/components/profile/Avatar';
 import { CROP_IMAGES } from '@/lib/supabase';
 import { syncPendingScans } from '@/lib/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { user, profile } = useAuth();
+  const { unreadCount } = useNotifications();
   const insets = useSafeAreaInsets();
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -89,9 +91,16 @@ export default function HomeScreen() {
       >
         <View style={styles.headerTopRow}>
           <Text style={[styles.greetingText, { color: tokens.colors.success500 }]}>Hi {firstName},</Text>
-          <TouchableOpacity style={styles.notificationBtn}>
+          <TouchableOpacity 
+            style={styles.notificationBtn}
+            onPress={() => router.push('/notifications')}
+          >
             <MaterialIcons name="notifications-none" size={28} color={tokens.colors.text} />
-            <View style={[styles.notificationDot, { backgroundColor: tokens.colors.success500 }]} />
+            {unreadCount > 0 && (
+              <View style={[styles.notificationBadge, { backgroundColor: tokens.colors.error500 }]}>
+                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -497,15 +506,23 @@ const styles = StyleSheet.create({
     position: 'relative',
     padding: 4,
   },
-  notificationDot: {
+  notificationBadge: {
     position: 'absolute',
-    top: 6,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
     borderWidth: 1.5,
     borderColor: tokens.colors.surface,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
   brandingHeader: {
     marginBottom: tokens.spacing.xl,

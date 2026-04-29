@@ -10,9 +10,20 @@ interface PendingScan {
   timestamp: number;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: number;
+  isRead: boolean;
+  type: 'scan_complete' | 'system' | 'tips' | 'diagnosis_update';
+  data?: any;
+}
+
 const PENDING_SCANS_KEY = '@cropwatch_pending_scans';
 const USER_PREFERENCES_KEY = '@cropwatch_preferences';
 const DIAGNOSIS_CACHE_KEY = '@cropwatch_diagnosis_cache';
+const NOTIFICATIONS_KEY = '@cropwatch_notifications';
 
 export const OfflineStorage = {
   async savePendingScan(scan: PendingScan): Promise<void> {
@@ -96,6 +107,39 @@ export const OfflineStorage = {
   },
 
   async clearAll(): Promise<void> {
-    await AsyncStorage.multiRemove([PENDING_SCANS_KEY, USER_PREFERENCES_KEY, DIAGNOSIS_CACHE_KEY]);
+    await AsyncStorage.multiRemove([PENDING_SCANS_KEY, USER_PREFERENCES_KEY, DIAGNOSIS_CACHE_KEY, NOTIFICATIONS_KEY]);
+  },
+
+  async getNotifications(): Promise<AppNotification[]> {
+    const data = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
+    const notifications: AppNotification[] = data ? JSON.parse(data) : [];
+    // Sort by timestamp descending
+    return notifications.sort((a, b) => b.timestamp - a.timestamp);
+  },
+
+  async addNotification(notif: Omit<AppNotification, 'id' | 'timestamp' | 'isRead'>): Promise<void> {
+    const notifications = await this.getNotifications();
+    const newNotif: AppNotification = {
+      ...notif,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      isRead: false,
+    };
+    notifications.unshift(newNotif);
+    await AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+  },
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    const notifications = await this.getNotifications();
+    const index = notifications.findIndex(n => n.id === id);
+    if (index !== -1) {
+      notifications[index].isRead = true;
+      await AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    }
+  },
+
+  async getUnreadNotificationCount(): Promise<number> {
+    const notifications = await this.getNotifications();
+    return notifications.filter(n => !n.isRead).length;
   },
 };

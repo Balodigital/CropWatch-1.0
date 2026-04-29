@@ -147,6 +147,18 @@ export async function syncPendingScans(): Promise<{ synced: number; failed: numb
         const cache = await OfflineStorage.getDiagnosisCache();
         if (!cache[scan.id]) {
           await OfflineStorage.cacheDiagnosis(scan.id, data.diagnosis, scan.cropType);
+          
+          // Add notification
+          await OfflineStorage.addNotification({
+            title: 'Scan Complete',
+            description: `Your ${scan.cropType} scan has been automatically diagnosed. Tap to view result.`,
+            type: 'scan_complete',
+            data: { 
+              scanId: scan.id, 
+              cropType: scan.cropType,
+              diagnosis: data.diagnosis
+            }
+          });
         }
         await OfflineStorage.removePendingScan(scan.id);
         synced++;
