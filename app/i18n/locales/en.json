@@ -37,7 +37,7 @@
     "settings": "Settings"
   },
   "dashboard": {
-    "welcome": "Welcome to CropWatch",
+    "welcome": "Welcome to CropScan",
     "hero_desc": "Identify crop diseases early and protect your harvest.",
     "scan_leaf": "Identify Issue",
     "describe_placeholder": "Describe what you see...",
@@ -147,10 +147,10 @@
     "made_with": "Made with 💚 for Nigerian Farmers",
     "update_title": "Update",
     "update_msg": "You are using the latest version.",
-    "default_user": "CropWatch User",
+    "default_user": "CropScan User",
     "error_logout": "Failed to sign out. Please try again.",
     "error_signout_all": "Failed to sign out of all devices. Please try again.",
-    "lang_description": "Choose your preferred language for the CropWatch app.",
+    "lang_description": "Choose your preferred language for the CropScan app.",
     "lang_en": "English",
     "lang_pcm": "Nigerian Pidgin"
   },
@@ -179,7 +179,7 @@
     "login_failed": "Sign In Failed",
     "unexpected_error": "An unexpected error occurred.",
     "register_title": "Create Account",
-    "register_desc": "Join CropWatch and start protecting your harvest",
+    "register_desc": "Join CropScan and start protecting your harvest",
     "full_name_label": "Full Name",
     "full_name_placeholder": "Enter your full name",
     "email_placeholder": "Enter your email",
@@ -187,8 +187,8 @@
     "register_failed": "Sign Up Failed",
     "success": {
       "title": "Account Created Successfully",
-      "desc": "Your account has been created. You can now sign in to start monitoring your crops and getting AI diagnoses.",
-      "continue": "Continue to Sign In"
+      "desc": "Your account has been created. We've sent a verification link to your email. Please check your inbox and follow the link to verify your account.",
+      "continue": "Check My Email"
     },
     "forgot": {
       "title": "Forgot Password",

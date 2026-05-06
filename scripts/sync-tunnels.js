@@ -32,40 +32,47 @@ function updateAppEnv(url) {
 }
 
 // Start Cloudflare Tunnel for the API
-console.log(`📡 Opening tunnel for API on port ${API_PORT}...`);
-const tunnelProcess = spawn(npxCmd, ['cloudflared', 'tunnel', '--url', `http://127.0.0.1:${API_PORT}`], {
-  shell: true
-});
+function startTunnel() {
+  console.log(`📡 Opening tunnel for API on port ${API_PORT}...`);
+  const tunnelProcess = spawn(npxCmd, ['cloudflared', 'tunnel', '--url', `http://127.0.0.1:${API_PORT}`], {
+    shell: true
+  });
 
-let apiUrlFound = false;
+  let apiUrlFound = false;
 
-tunnelProcess.stderr.on('data', (data) => {
-  const output = data.toString();
-  // Match Cloudflare tunnel URL, specifically looking for the random subdomain
-  const match = output.match(/https:\/\/[a-z0-9-]{10,}\.trycloudflare\.com/);
-  
-  if (match && !apiUrlFound && !match[0].includes('api.trycloudflare.com')) {
-    const url = match[0];
-    apiUrlFound = true;
-    console.log(`🌐 API Tunnel Live: ${url}`);
-    updateAppEnv(url);
-    console.log('\n🚀 Step 2: Now run this in another terminal:');
-    console.log('   npm run tunnel:app');
-    console.log('\n(Keep this terminal open to maintain the backend link)');
-  }
+  tunnelProcess.stderr.on('data', (data) => {
+    const output = data.toString();
+    const match = output.match(/https:\/\/[a-z0-9-]{10,}\.trycloudflare\.com/);
+    
+    if (match && !apiUrlFound && !match[0].includes('api.trycloudflare.com')) {
+      const url = match[0];
+      apiUrlFound = true;
+      console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      console.log(`🌐 API Tunnel Live: ${url}`);
+      console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+      updateAppEnv(url);
+      console.log('🚀 Step 2: Now run this in another terminal:');
+      console.log('   npm run tunnel:app');
+      console.log('\n(Keep this terminal open to maintain the backend link)');
+    }
 
-  if (output.includes('ERR')) {
-    console.error(`❌ Tunnel Error: ${output.trim()}`);
-  }
-});
+    if (output.includes('ERR')) {
+      console.error(`❌ Tunnel Error: ${output.trim()}`);
+    }
+  });
 
-tunnelProcess.on('close', (code) => {
-  console.log(`📡 Tunnel closed with code ${code}`);
-});
+  tunnelProcess.on('close', (code) => {
+    console.log(`📡 Tunnel closed with code ${code}. Restarting in 5 seconds...`);
+    setTimeout(startTunnel, 5000);
+  });
 
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-  tunnelProcess.kill();
-  process.exit();
-});
+  // Handle graceful shutdown
+  process.on('SIGINT', () => {
+    tunnelProcess.kill();
+    process.exit();
+  });
+}
+
+startTunnel();
+
 

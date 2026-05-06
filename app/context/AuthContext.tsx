@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. Check onboarding status
     const checkOnboarding = async () => {
       try {
-        const value = await AsyncStorage.getItem('@cropwatch_onboarding_finished');
+        const value = await AsyncStorage.getItem('@cropscan_onboarding_finished');
         if (value === 'true') {
           setHasFinishedOnboarding(true);
         }
@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       // Load saved language first
       try {
-        const savedLang = await AsyncStorage.getItem('@cropwatch_language');
+        const savedLang = await AsyncStorage.getItem('@cropscan_language');
         if (savedLang) {
           i18n.changeLanguage(savedLang);
         }
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             if (data?.language_pref) {
               i18n.changeLanguage(data.language_pref);
-              await AsyncStorage.setItem('@cropwatch_language', data.language_pref);
+              await AsyncStorage.setItem('@cropscan_language', data.language_pref);
             }
             await fetchProfile(newSession.user.id);
           } else {
@@ -117,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setOnboardingFinished = async (value: boolean) => {
     try {
-      await AsyncStorage.setItem('@cropwatch_onboarding_finished', value ? 'true' : 'false');
+      await AsyncStorage.setItem('@cropscan_onboarding_finished', value ? 'true' : 'false');
       setHasFinishedOnboarding(value);
     } catch (e) {
       console.error('Error saving onboarding status', e);

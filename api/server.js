@@ -28,6 +28,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌱 CropWatch API server running on port ${PORT}`);
+  console.log(`🌱 CropScan API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });

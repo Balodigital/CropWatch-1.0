@@ -20,12 +20,29 @@ export interface AppNotification {
   data?: any;
 }
 
-const PENDING_SCANS_KEY = '@cropwatch_pending_scans';
-const USER_PREFERENCES_KEY = '@cropwatch_preferences';
-const DIAGNOSIS_CACHE_KEY = '@cropwatch_diagnosis_cache';
-const NOTIFICATIONS_KEY = '@cropwatch_notifications';
+const PENDING_SCANS_KEY = '@cropscan_pending_scans';
+const USER_PREFERENCES_KEY = '@cropscan_preferences';
+const DIAGNOSIS_CACHE_KEY = '@cropscan_diagnosis_cache';
+const NOTIFICATIONS_KEY = '@cropscan_notifications';
+const SEARCH_HISTORY_KEY = '@cropscan_search_history';
 
 export const OfflineStorage = {
+  async saveRecentSearch(query: string): Promise<void> {
+    if (!query.trim()) return;
+    const history = await this.getRecentSearches();
+    const filtered = history.filter(q => q.toLowerCase() !== query.toLowerCase());
+    filtered.unshift(query);
+    await AsyncStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(filtered.slice(0, 10)));
+  },
+
+  async getRecentSearches(): Promise<string[]> {
+    const data = await AsyncStorage.getItem(SEARCH_HISTORY_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  async clearRecentSearches(): Promise<void> {
+    await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
+  },
   async savePendingScan(scan: PendingScan): Promise<void> {
     const pending = await this.getPendingScans();
     pending.push(scan);

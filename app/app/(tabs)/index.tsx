@@ -106,7 +106,7 @@ export default function HomeScreen() {
 
         <View style={styles.brandingHeader}>
           <Text style={[styles.welcomeToText, { color: tokens.colors.primary800 }]}>Welcome to</Text>
-          <Text style={[styles.welcomeBrandText, { color: '#2C6A4F' }]}>CropWatch</Text>
+          <Text style={[styles.welcomeBrandText, { color: '#2C6A4F' }]}>CropScan</Text>
           <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
             {t('dashboard.hero_desc').replace(' and ', '\nand ')}
           </Text>
@@ -204,30 +204,52 @@ function InsightCard({ text, highlight, onPress }: { text: string, highlight?: s
   );
 }
 
+const STATIC_SUGGESTIONS = [
+  { id: 's1', display: 'Tomato Late Blight', cropType: 'Tomato', diagnosis: [{ name: 'Late Blight', confidence: 0.9, treatment: 'Apply recommended fungicides.', prevention: 'Practice crop rotation.' }], matchType: 'static' },
+  { id: 's2', display: 'Maize Leaf Rust', cropType: 'Maize', diagnosis: [{ name: 'Leaf Rust', confidence: 0.85, treatment: 'Use resistant varieties.', prevention: 'Ensure proper spacing.' }], matchType: 'static' },
+  { id: 's3', display: 'Cassava Mosaic', cropType: 'Cassava', diagnosis: [{ name: 'Mosaic Disease', confidence: 0.88, treatment: 'Use clean planting materials.', prevention: 'Control whiteflies.' }], matchType: 'static' },
+  { id: 's4', display: 'Yam Anthracnose', cropType: 'Yam', diagnosis: [{ name: 'Anthracnose', confidence: 0.82, treatment: 'Apply organic fungicides.', prevention: 'Maintain field sanitation.' }], matchType: 'static' },
+];
+
 function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    loadRecentSearches();
+  }, []);
+
+  const loadRecentSearches = async () => {
+    const rs = await OfflineStorage.getRecentSearches();
+    setRecentSearches(rs);
+  };
 
   const handleSearch = (text: string) => {
     const trimmedText = text.trim();
     setQuery(text);
     
     if (trimmedText.length > 0) {
-      const filtered = history.reduce((acc: any[], item) => {
+      const searchTerm = trimmedText.toLowerCase();
+      
+      // 1. Search in static suggestions
+      const staticMatches = STATIC_SUGGESTIONS.filter(s => 
+        s.display.toLowerCase().includes(searchTerm) || 
+        s.cropType.toLowerCase().includes(searchTerm)
+      ).map(s => ({ ...s, priority: s.display.toLowerCase().startsWith(searchTerm) ? 4 : 3 }));
+
+      // 2. Search in user scan history (Should NOT be cleared by search bar)
+      const scanMatches = history.reduce((acc: any[], item) => {
         const cropType = item.cropType.toLowerCase();
-        const searchTerm = trimmedText.toLowerCase();
-        
         const cropMatch = cropType.includes(searchTerm);
         const cropStarts = cropType.startsWith(searchTerm);
         
-        // Search in diagnosis names AND descriptions/symptoms if they exist
         const diseaseMatches = item.diagnosis.filter((d: any) => 
           d.name.toLowerCase().includes(searchTerm) || 
-          (d.treatment && d.treatment.toLowerCase().includes(searchTerm)) ||
-          (d.prevention && d.prevention.toLowerCase().includes(searchTerm))
+          (d.treatment && d.treatment.toLowerCase().includes(searchTerm))
         );
 
         if (cropMatch || diseaseMatches.length > 0) {
@@ -236,32 +258,66 @@ function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => vo
             cropType: item.cropType,
             diagnosis: item.diagnosis,
             display: cropMatch ? item.cropType : diseaseMatches[0].name,
-            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : (diseaseMatches.length > 0 ? item.cropType : 'Previous Scan'),
-            matchType: cropMatch ? 'crop' : 'disease',
-            priority: cropStarts ? 2 : (cropMatch ? 1 : 0)
+            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : 'Previous Scan',
+            matchType: 'scan',
+            priority: cropStarts ? 2 : 1
           });
         }
         return acc;
       }, []);
 
-      // Sort by priority (exact/starts-with first)
-      const sorted = filtered.sort((a: any, b: any) => b.priority - a.priority);
-      
-      setSuggestions(sorted.slice(0, 6));
+      // 3. Search in recent searches (Can be cleared)
+      const searchMatches = recentSearches.filter(q => 
+        q.toLowerCase().includes(searchTerm)
+      ).map(q => ({
+        id: `search_${q}`,
+        display: q,
+        subDisplay: 'Recent Search',
+        matchType: 'search',
+        priority: q.toLowerCase().startsWith(searchTerm) ? 1.5 : 0.5,
+        // Since it's a search term, we don't have diagnosis data yet
+        // but we can make it searchable
+        isSearchQuery: true
+      }));
+
+      // Combine and sort by priority
+      const combined = [...staticMatches, ...scanMatches, ...searchMatches].sort((a, b) => b.priority - a.priority);
+      setSuggestions(combined.slice(0, 8));
       setShowSuggestions(true);
     } else {
-      // If empty query, show recent 3 items as suggestions
-      setSuggestions(history.slice(0, 3).map(item => ({
+      // If empty query, show recent scans + some static suggestions + recent searches
+      const recentScans = history.slice(0, 2).map(item => ({
         ...item,
         display: item.cropType,
-        subDisplay: item.diagnosis[0]?.name || 'No disease detected',
-        matchType: 'recent'
-      })));
+        subDisplay: item.diagnosis[0]?.name || 'Recent Scan',
+        matchType: 'recent_scan'
+      }));
+
+      const recentQueries = recentSearches.slice(0, 2).map(q => ({
+        id: `q_${q}`,
+        display: q,
+        subDisplay: 'Recent Search',
+        matchType: 'recent_search',
+        isSearchQuery: true
+      }));
+      
+      const defaultStatic = STATIC_SUGGESTIONS.slice(0, 3);
+      setSuggestions([...recentScans, ...recentQueries, ...defaultStatic]);
       setShowSuggestions(true);
     }
   };
 
-  const selectSuggestion = (suggestion: any) => {
+  const selectSuggestion = async (suggestion: any) => {
+    if (suggestion.isSearchQuery) {
+      setQuery(suggestion.display);
+      handleSearch(suggestion.display);
+      return;
+    }
+
+    // Save to search history
+    await OfflineStorage.saveRecentSearch(suggestion.display);
+    await loadRecentSearches();
+
     setQuery('');
     setShowSuggestions(false);
     router.push({
@@ -275,9 +331,11 @@ function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => vo
   };
 
   const handleClearHistory = async () => {
-    await OfflineStorage.clearDiagnosisCache();
-    setShowSuggestions(false);
-    onRefresh();
+    // ONLY clear recent searches, NOT scan history
+    await OfflineStorage.clearRecentSearches();
+    await loadRecentSearches();
+    // Re-trigger search with current query to update UI
+    handleSearch(query);
   };
 
   return (
@@ -292,6 +350,11 @@ function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => vo
           onChangeText={handleSearch}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
           onFocus={() => handleSearch(query)}
+          onSubmitEditing={() => {
+            if (query.trim()) {
+              OfflineStorage.saveRecentSearch(query.trim()).then(loadRecentSearches);
+            }
+          }}
           underlineColorAndroid="transparent"
           autoCapitalize="none"
           autoCorrect={false}

@@ -20,6 +20,7 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { tokens } from '@/constants/tokens';
 import { CROP_IMAGES } from '@/lib/supabase';
+import { fetchAndRestoreHistory } from '@/lib/api';
 
 interface HistoryItem {
   id: string;
@@ -44,7 +45,16 @@ export default function HistoryScreen() {
   const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
 
   const loadHistory = async () => {
-    const diagnosisCache = await OfflineStorage.getDiagnosisCache();
+    let diagnosisCache = await OfflineStorage.getDiagnosisCache();
+    
+    // If cache is empty, try to restore from Supabase
+    if (Object.keys(diagnosisCache).length === 0) {
+      const { count } = await fetchAndRestoreHistory();
+      if (count > 0) {
+        diagnosisCache = await OfflineStorage.getDiagnosisCache();
+      }
+    }
+
     const pendingScans = await OfflineStorage.getPendingScans();
 
     const completedItems: HistoryItem[] = Object.entries(diagnosisCache).map(
@@ -103,6 +113,7 @@ export default function HistoryScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    await fetchAndRestoreHistory();
     await loadHistory();
     setRefreshing(false);
   };

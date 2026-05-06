@@ -1,8 +1,8 @@
-# CropWatch
+# CropScan
 
-CropWatch is an AI-powered mobile application that enables smallholder farmers in Nigeria and West Africa to identify crop diseases and nutrient deficiencies using leaf photos and simple text descriptions.
+CropScan is an AI-powered mobile application that enables smallholder farmers in Nigeria and West Africa to identify crop diseases and nutrient deficiencies using leaf photos and simple text descriptions.
 
-By addressing the challenge of late disease detection and bridging the "40 km gap" to agricultural extension officers, CropWatch helps farmers act early, reduce crop losses, and improve yields with locally available, affordable treatments.
+By addressing the challenge of late disease detection and bridging the "40 km gap" to agricultural extension officers, CropScan helps farmers act early, reduce crop losses, and improve yields with locally available, affordable treatments.
 
 ## Key Features
 

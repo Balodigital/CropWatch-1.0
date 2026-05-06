@@ -58,7 +58,7 @@ export default function SplashScreen() {
           <Sprout size={64} color={theme.primary} />
         </View>
         <Text style={[Typography.displaySmall, { color: theme.primary, marginTop: 24 }]}>
-          CropWatch
+          CropScan
         </Text>
         <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
           {t('splash.subtitle')}

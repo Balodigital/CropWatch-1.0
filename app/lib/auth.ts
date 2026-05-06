@@ -26,6 +26,7 @@ export const signUp = async (email: string, password: string, metadata: any) => 
       password,
       options: {
         data: metadata,
+        emailRedirectTo: 'cropscan://verify',
       },
     });
 
@@ -59,7 +60,7 @@ export const signIn = async (email: string, password: string) => {
 export const resetPassword = async (email: string) => {
   try {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'cropwatch://reset-password',
+      redirectTo: 'cropscan://reset-password',
     });
 
     if (error) {

@@ -51,7 +51,7 @@ export default function SupportChatScreen() {
       {
         id: '1',
         role: 'assistant',
-        content: "Hi 👋 I'm CropWatch AI. How can I help you today?",
+        content: "Hi 👋 I'm CropScan AI. How can I help you today?",
         timestamp: Date.now(),
       }
     ]);
@@ -160,7 +160,7 @@ export default function SupportChatScreen() {
     <View style={styles.container}>
       <AppHeader 
         title="Support" 
-        subtitle="Chat with CropWatch AI" 
+        subtitle="Chat with CropScan AI" 
         onBack={() => router.push('/settings')}
       />
       

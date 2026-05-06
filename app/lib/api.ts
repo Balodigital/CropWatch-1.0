@@ -173,6 +173,39 @@ export async function syncPendingScans(): Promise<{ synced: number; failed: numb
   return { synced, failed };
 }
 
+export async function fetchAndRestoreHistory(): Promise<{ count: number; error?: string }> {
+  try {
+    const { data: { user } } = await require('./supabase').supabase.auth.getUser();
+    if (!user) return { count: 0, error: 'User not authenticated' };
+
+    const { data: scans, error } = await require('./supabase').supabase
+      .from('scans')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    if (!scans || scans.length === 0) return { count: 0 };
+
+    let count = 0;
+    for (const scan of scans) {
+      // Re-populate the local cache
+      await OfflineStorage.cacheDiagnosis(
+        scan.id, 
+        scan.diagnosis_json || [], 
+        scan.crop_type
+      );
+      count++;
+    }
+
+    return { count };
+  } catch (err: any) {
+    console.error('[API] Restore history failed:', err);
+    return { count: 0, error: err.message };
+  }
+}
+
 export interface SupportMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
