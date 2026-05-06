@@ -5,7 +5,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   FlatList,
   RefreshControl,
   Image,
@@ -20,7 +19,6 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { tokens } from '@/constants/tokens';
 import { CROP_IMAGES } from '@/lib/supabase';
-import { fetchAndRestoreHistory } from '@/lib/api';
 
 interface HistoryItem {
   id: string;
@@ -34,7 +32,7 @@ interface HistoryItem {
   timestamp: number;
 }
 
-export default function HistoryScreen() {
+export default function PendingScansScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
@@ -44,36 +42,10 @@ export default function HistoryScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
 
-  const loadHistory = async () => {
-    let diagnosisCache = await OfflineStorage.getDiagnosisCache();
-    
-    // If cache is empty, try to restore from Supabase
-    if (Object.keys(diagnosisCache).length === 0) {
-      const { count } = await fetchAndRestoreHistory();
-      if (count > 0) {
-        diagnosisCache = await OfflineStorage.getDiagnosisCache();
-      }
-    }
-
+  const loadPendingScans = async () => {
     const pendingScans = await OfflineStorage.getPendingScans();
 
-    const completedItems: HistoryItem[] = Object.entries(diagnosisCache).map(
-      ([id, data]) => {
-        return {
-          id,
-          cropType: data.cropType || 'Crop',
-          cropIcon: '', // Not used anymore
-          diagnosis: data.diagnosis,
-          createdAt: new Date(data.timestamp).toLocaleDateString(),
-          status: 'completed' as const,
-          timestamp: data.timestamp,
-        };
-      }
-    );
-
-    const pendingItems: HistoryItem[] = pendingScans
-      .filter(scan => !diagnosisCache[scan.id]) // Filter out already synced items
-      .map((scan) => ({
+    const pendingItems: HistoryItem[] = pendingScans.map((scan) => ({
       id: scan.id,
       cropType: scan.cropType,
       cropIcon: '', // Not used anymore
@@ -85,20 +57,7 @@ export default function HistoryScreen() {
       timestamp: scan.timestamp,
     }));
 
-    // De-duplicate by ID (History items take precedence over Pending)
-    const historyMap = new Map<string, HistoryItem>();
-    
-    // Add completed items first
-    completedItems.forEach(item => historyMap.set(item.id, item));
-    
-    // Add pending items only if not already completed
-    pendingItems.forEach(item => {
-      if (!historyMap.has(item.id)) {
-        historyMap.set(item.id, item);
-      }
-    });
-
-    let allHistory = Array.from(historyMap.values()).sort(
+    const allHistory = pendingItems.sort(
       (a, b) => b.timestamp - a.timestamp
     );
 
@@ -107,14 +66,13 @@ export default function HistoryScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
+      loadPendingScans();
     }, [])
   );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchAndRestoreHistory();
-    await loadHistory();
+    await loadPendingScans();
     setRefreshing(false);
   };
 
@@ -139,62 +97,35 @@ export default function HistoryScreen() {
   const confirmDelete = async () => {
     if (!itemToDelete) return;
     
-    if (itemToDelete.status === 'pending') {
-      await OfflineStorage.removePendingScan(itemToDelete.id);
-    } else {
-      await OfflineStorage.removeCachedDiagnosis(itemToDelete.id);
-    }
+    await OfflineStorage.removePendingScan(itemToDelete.id);
     
     setDeleteModalVisible(false);
     setItemToDelete(null);
-    loadHistory();
+    loadPendingScans();
   };
 
   const renderItem = ({ item }: { item: HistoryItem }) => {
-    const topDiagnosis = item.diagnosis[0];
-    const severityColor = getSeverityColor(topDiagnosis?.severity);
-    
-    const getCardBackground = (severity?: string) => {
-      const s = severity?.toLowerCase();
-      if (s === 'severe') {
-        return tokens.colors.error98;
-      }
-      return tokens.colors.neutral98;
-    };
-
-    const cardBg = getCardBackground(topDiagnosis?.severity);
-
-    const handleCardPress = () => {
-      if (item.status === 'completed' && item.diagnosis.length > 0) {
-        router.push({
-          pathname: '/result',
-          params: {
-            diagnosis: JSON.stringify(item.diagnosis),
-            cropType: item.cropType,
-            image: '',
-          },
-        });
-      } else if (item.status === 'pending') {
-        router.push({
-          pathname: '/scan/analyzing',
-          params: {
-            image: item.imageBase64,
-            cropType: item.cropType,
-            description: item.description,
-            pendingId: item.id,
-          },
-        });
-      }
-    };
-
     return (
-      <View style={[styles.historyCard, { backgroundColor: cardBg }]}>
+      <View style={[styles.historyCard, { backgroundColor: tokens.colors.neutral98 }]}>
+        <TouchableOpacity
+          style={styles.cardTouchable}
+          onPress={() => {
+            if (item.status === 'pending') {
+              router.push({
+                pathname: '/scan/analyzing',
+                params: {
+                  image: item.imageBase64,
+                  cropType: item.cropType,
+                  description: item.description,
+                  pendingId: item.id,
+                },
+              });
+            }
+          }}
+          activeOpacity={0.7}
+        >
         <View style={styles.cardHeader}>
-          <TouchableOpacity 
-            style={styles.cropInfoTouchable} 
-            onPress={handleCardPress}
-            activeOpacity={0.7}
-          >
+          <View style={styles.cropInfo}>
             <View style={[styles.imageContainer, { backgroundColor: tokens.colors.primary50 }]}>
               <Image 
                 source={CROP_IMAGES[item.cropType.toLowerCase()] || { uri: 'https://via.placeholder.com/40' }} 
@@ -210,72 +141,26 @@ export default function HistoryScreen() {
                 {item.createdAt}
               </Text>
             </View>
-          </TouchableOpacity>
+          </View>
           <View style={styles.rightActions}>
-            {item.status === 'pending' && (
-              <View style={[styles.statusBadge, { backgroundColor: colors.warning + '20' }]}>
-                <Text style={[styles.statusText, { color: colors.warning }]}>Pending</Text>
-              </View>
-            )}
-            {item.status === 'completed' && topDiagnosis && (
-              <View
-                style={[styles.severityBadge, { backgroundColor: severityColor + '20' }]}
-              >
-                <Text style={[styles.severityText, { color: severityColor }]}>
-                  {topDiagnosis.severity}
-                </Text>
-              </View>
-            )}
-            <TouchableOpacity 
-              onPress={() => handleDelete(item)} 
-              style={styles.deleteButton}
-              hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            >
-              <MaterialIcons name="delete-outline" size={20} color={tokens.colors.error500} />
-            </TouchableOpacity>
+            <View style={[styles.statusBadge, { backgroundColor: colors.warning + '20' }]}>
+              <Text style={[styles.statusText, { color: colors.warning }]}>Pending</Text>
+            </View>
+            <View style={{ width: 28 }} />
           </View>
         </View>
 
+        <Text style={[styles.pendingText, { color: colors.textSecondary }]}>
+          Awaiting connection to process...
+        </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity 
-          style={styles.cardBodyTouchable}
-          onPress={handleCardPress}
-          activeOpacity={0.7}
+          onPress={() => handleDelete(item)} 
+          style={styles.deleteButtonAbsolute}
+          hitSlop={{ top: 15, right: 15, bottom: 15, left: 15 }}
         >
-
-        {item.status === 'completed' && topDiagnosis && (
-          <View style={styles.diagnosisInfo}>
-            <Text style={[styles.diagnosisName, { color: colors.text }]}>
-              {topDiagnosis.name}
-            </Text>
-            <View style={styles.confidenceContainer}>
-              <View
-                style={[
-                  styles.confidenceBar,
-                  { backgroundColor: colors.textSecondary + '20' },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.confidenceFill,
-                    {
-                      backgroundColor: severityColor,
-                      width: `${topDiagnosis.confidence}%`,
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={[styles.confidenceText, { color: colors.textSecondary }]}>
-                {topDiagnosis.confidence}%
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {item.status === 'pending' && (
-          <Text style={[styles.pendingText, { color: colors.textSecondary }]}>
-            Awaiting connection to process...
-          </Text>
-        )}
+          <MaterialIcons name="delete-outline" size={20} color={tokens.colors.error500} />
         </TouchableOpacity>
       </View>
     );
@@ -283,16 +168,16 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <AppHeader title={t('tabs.history')} showBack={false} />
-
+      <AppHeader title="Pending Scans" showBack={true} />
+      
       {history.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>📋</Text>
+          <Text style={styles.emptyIcon}>☁️</Text>
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            No History Yet
+            No Pending Scans
           </Text>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Your scan history will appear here after you analyze your first crop
+            You have successfully synced all your scans.
           </Text>
           <TouchableOpacity
             style={[styles.emptyButton, { backgroundColor: colors.primary }]}
@@ -331,8 +216,6 @@ export default function HistoryScreen() {
   );
 }
 
-// getCropIcon removed in favor of centralized images
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -350,7 +233,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-    paddingTop: 16,
+  },
+  cardTouchable: {
+    padding: 16,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -362,20 +247,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingRight: 16,
   },
-  deleteButton: {
+  deleteButtonAbsolute: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
     padding: 4,
+    zIndex: 10,
+    elevation: 10,
   },
-  cropInfoTouchable: {
-    flex: 1,
+  cropInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 16,
-  },
-  cardBodyTouchable: {
-    padding: 16,
-    paddingTop: 0,
   },
   imageContainer: {
     width: 40,
@@ -407,42 +290,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '600',
-  },
-  severityBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  severityText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  diagnosisInfo: {
-    marginTop: 4,
-  },
-  diagnosisName: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  confidenceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  confidenceBar: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 8,
-  },
-  confidenceFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  confidenceText: {
-    fontSize: 12,
-    fontWeight: '500',
-    width: 40,
   },
   pendingText: {
     fontSize: 14,

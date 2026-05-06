@@ -5,9 +5,9 @@ import {
   StyleSheet, 
   FlatList, 
   Dimensions, 
-  TouchableOpacity, 
-  SafeAreaView 
+  TouchableOpacity
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
@@ -15,41 +15,48 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Camera, Cpu, ShieldCheck } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
 const ONBOARDING_DATA = [
   {
     id: '1',
-    title: 'Scan Your Crop',
-    description: 'Take a photo and describe the issue to identify potential diseases.',
+    titleKey: 'onboarding.slide1_title',
+    descriptionKey: 'onboarding.slide1_desc',
     icon: Camera,
   },
   {
     id: '2',
-    title: 'Get Instant Diagnosis',
-    description: 'Our AI analyzes and identifies crop diseases in seconds.',
+    titleKey: 'onboarding.slide2_title',
+    descriptionKey: 'onboarding.slide2_desc',
     icon: Cpu,
   },
   {
     id: '3',
-    title: 'Treat & Prevent',
-    description: 'Get affordable solutions and prevention tips to protect your harvest.',
+    titleKey: 'onboarding.slide3_title',
+    descriptionKey: 'onboarding.slide3_desc',
     icon: ShieldCheck,
   },
 ];
 
 export default function OnboardingScreen() {
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const flatListRef = useRef<FlatList>(null);
   const { setOnboardingFinished } = useAuth();
+  const { t } = useTranslation();
 
   const handleNext = async () => {
     if (currentIndex < ONBOARDING_DATA.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+      flatListRef.current?.scrollToIndex({ 
+        index: currentIndex + 1,
+        animated: true 
+      });
     } else {
       await setOnboardingFinished(true);
       router.replace('/(auth)/login');
@@ -70,10 +77,10 @@ export default function OnboardingScreen() {
         </View>
         <View style={styles.textContainer}>
           <Text style={[Typography.displaySmall, { color: theme.onSurface, textAlign: 'center' }]}>
-            {item.title}
+            {t(item.titleKey)}
           </Text>
           <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, textAlign: 'center', marginTop: 16 }]}>
-            {item.description}
+            {t(item.descriptionKey)}
           </Text>
         </View>
       </View>
@@ -81,10 +88,10 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-          <Text style={[Typography.labelLarge, { color: theme.primary }]}>Skip</Text>
+          <Text style={[Typography.labelLarge, { color: theme.primary }]}>{t('onboarding.skip')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -99,7 +106,13 @@ export default function OnboardingScreen() {
           const x = e.nativeEvent.contentOffset.x;
           setCurrentIndex(Math.round(x / width));
         }}
+        scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
+        getItemLayout={(_, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
       />
 
       <View style={styles.footer}>
@@ -119,12 +132,12 @@ export default function OnboardingScreen() {
         </View>
 
         <Button
-          title={currentIndex === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+          title={currentIndex === ONBOARDING_DATA.length - 1 ? t('onboarding.get_started') : t('onboarding.next')}
           onPress={handleNext}
           style={styles.nextButton}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -134,7 +147,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
     alignItems: 'flex-end',
   },
   skipButton: {

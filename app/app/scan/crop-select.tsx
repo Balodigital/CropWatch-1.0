@@ -21,7 +21,7 @@ export default function CropSelectScreen() {
 
   const handleContinue = () => {
     if (selectedCrop) {
-      router.replace({
+      router.push({
         pathname: '/scan/symptoms',
         params: { image, cropType: selectedCrop },
       });

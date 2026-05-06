@@ -24,9 +24,9 @@ export default function LanguageScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>Choose Your Language</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('language_screen.title')}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Choose your preferred language
+          {t('language_screen.subtitle')}
         </Text>
 
         <View style={styles.optionsContainer}>
@@ -44,9 +44,9 @@ export default function LanguageScreen() {
           >
             <Text style={styles.flagIcon}>🇬🇧</Text>
             <View style={styles.languageTextContainer}>
-              <Text style={[styles.languageName, { color: colors.text }]}>English</Text>
+              <Text style={[styles.languageName, { color: colors.text }]}>{t('language_screen.english')}</Text>
               <Text style={[styles.languageNative, { color: colors.textSecondary }]}>
-                For formal communication
+                {t('language_screen.english_desc')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -64,9 +64,9 @@ export default function LanguageScreen() {
           >
             <Text style={styles.flagIcon}>🇳🇬</Text>
             <View style={styles.languageTextContainer}>
-              <Text style={[styles.languageName, { color: colors.text }]}>Nigerian Pidgin</Text>
+              <Text style={[styles.languageName, { color: colors.text }]}>{t('language_screen.pidgin')}</Text>
               <Text style={[styles.languageNative, { color: colors.textSecondary }]}>
-                Wetin you go yarn for farm
+                {t('language_screen.pidgin_desc')}
               </Text>
             </View>
           </TouchableOpacity>

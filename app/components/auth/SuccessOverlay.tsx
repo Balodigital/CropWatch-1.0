@@ -12,6 +12,7 @@ import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle2 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 interface SuccessOverlayProps {
   visible: boolean;
@@ -21,6 +22,7 @@ interface SuccessOverlayProps {
 export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({ visible, onClose }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { t } = useTranslation();
 
   return (
     <Modal
@@ -35,15 +37,15 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({ visible, onClose
           </View>
           
           <Text style={[Typography.headlineSmall, { color: theme.onSurface, textAlign: 'center' }]}>
-            Account Created Successfully
+            {t('auth.success.title')}
           </Text>
           
           <Text style={[Typography.bodyMedium, { color: theme.onSurfaceVariant, textAlign: 'center', marginTop: 12, marginBottom: 24 }]}>
-            Your account has been created. You can now sign in to start monitoring your crops and getting AI diagnoses.
+            {t('auth.success.desc')}
           </Text>
           
           <Button
-            title="Continue to Sign In"
+            title={t('auth.success.continue')}
             onPress={onClose}
             style={styles.button}
           />

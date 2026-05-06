@@ -87,6 +87,7 @@ export const Button: FC<ButtonProps> = ({
           borderWidth: variant === 'outline' ? 1.5 : 0,
           minHeight: Math.max(48, getHeight()), // Minimum 48px touch target enforcement
           paddingHorizontal: getPaddingHorizontal(),
+          paddingVertical: 12,
           borderRadius: tokens.radius.lg,
           opacity: pressed && Platform.OS === 'ios' ? 0.7 : (disabled ? 0.6 : 1),
         },

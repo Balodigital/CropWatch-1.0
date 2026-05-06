@@ -6,12 +6,14 @@ import { Typography } from '@/constants/Typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Sprout } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function SplashScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { session, hasFinishedOnboarding } = useAuth();
+  const { t } = useTranslation();
   
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.9);
@@ -31,9 +33,10 @@ export default function SplashScreen() {
     ]).start();
 
     const timer = setTimeout(() => {
+      // Force user to onboarding if they haven't finished it
+      // @ts-ignore
       if (!hasFinishedOnboarding) {
-        // @ts-ignore
-        router.replace('/(onboarding)/index');
+        router.replace('/onboarding');
       } else if (!session) {
         router.replace('/(auth)/login');
       } else {
@@ -55,10 +58,10 @@ export default function SplashScreen() {
           <Sprout size={64} color={theme.primary} />
         </View>
         <Text style={[Typography.displaySmall, { color: theme.primary, marginTop: 24 }]}>
-          CropWatch
+          CropScan
         </Text>
         <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-          Smart crop disease detection
+          {t('splash.subtitle')}
         </Text>
       </Animated.View>
     </View>

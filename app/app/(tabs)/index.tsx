@@ -1,138 +1,493 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { StyleSheet, View, Text, ScrollView, Pressable, Image, Platform, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { OfflineStorage } from '@/lib/offline';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Avatar } from '@/components/profile/Avatar';
+import { CROP_IMAGES } from '@/lib/supabase';
+import { syncPendingScans } from '@/lib/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { user, profile } = useAuth();
+  const { unreadCount } = useNotifications();
+  const insets = useSafeAreaInsets();
   const [pendingCount, setPendingCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  useEffect(() => {
-    loadPendingCount();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
-  const loadPendingCount = async () => {
+  const loadData = async () => {
+    // Try to sync if online and not already syncing
+    const isOnline = await OfflineStorage.isOnline();
+    if (isOnline && !isSyncing) {
+      setIsSyncing(true);
+      await syncPendingScans();
+      setIsSyncing(false);
+    }
+
     const count = await OfflineStorage.getPendingCount();
     setPendingCount(count);
+    
+    // Load history for search
+    const diagnosisCache = await OfflineStorage.getDiagnosisCache();
+    const historyItems = Object.entries(diagnosisCache).map(([id, data]: [string, any]) => ({
+      id,
+      cropType: data.cropType || 'Crop',
+      diagnosis: data.diagnosis || [],
+      timestamp: data.timestamp
+    }));
+    setHistory(historyItems);
   };
 
   const handleStartScan = () => {
     router.push('/scan/camera');
   };
 
+  const handleViewResult = (crop: string, status: string) => {
+    const dummyDiagnosis = status === 'healthy' ? [] : [
+      {
+        name: `${crop} Blight`,
+        confidence: 0.85,
+        severity: status === 'infected' ? 'Severe' : 'Moderate',
+        treatment: `Apply recommended fungicides and ensure proper spacing for better airflow.`,
+        prevention: `Use disease-resistant seeds and practice crop rotation.`
+      }
+    ];
+
+    router.push({
+      pathname: '/result',
+      params: {
+        diagnosis: JSON.stringify(dummyDiagnosis),
+        cropType: crop,
+        image: crop.toLowerCase(),
+      }
+    });
+  };
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name;
+  const firstName = displayName?.split(' ')[0] || 'Farmer';
+
   return (
-    <View style={styles.container}>
-      <AppHeader
-        title="CropWatch"
-        showBack={false}
-        leftAction={
-          <Pressable onPress={() => router.push('/profile')}>
-            <Avatar 
-              uri={profile?.avatar_url || user?.user_metadata?.avatar_url} 
-              size={32} 
-            />
-          </Pressable>
-        }
-      />
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: tokens.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: 20 }]}
         showsVerticalScrollIndicator={false}
       >
-      <View style={styles.heroSection}>
-        <Card style={[styles.heroCard, { backgroundColor: tokens.colors.primary500 }]} elevation="level2">
-          <MaterialIcons name="eco" size={48} color={tokens.colors.surface} style={{ marginBottom: tokens.spacing.sm }} />
-          <Text style={[tokens.typography.heading, { color: tokens.colors.surface, textAlign: 'center', marginBottom: tokens.spacing.xs }]}>
-            {t('dashboard.welcome')}
-          </Text>
-          <Text style={[tokens.typography.body, { color: tokens.colors.primary100, textAlign: 'center', marginBottom: tokens.spacing.lg }]}>
-            {t('dashboard.hero_desc')}
-          </Text>
-          <Button 
-            title={t('dashboard.scan_leaf')} 
-            onPress={handleStartScan}
-            variant="secondary"
-            size="large"
-            icon={<MaterialIcons name="camera-alt" size={24} color={tokens.colors.primary500} />}
-            style={{ width: '100%' }}
-          />
-        </Card>
-      </View>
+        <View style={styles.headerTopRow}>
+          <Text style={[styles.greetingText, { color: tokens.colors.success500 }]}>Hi {firstName},</Text>
+          <TouchableOpacity 
+            style={styles.notificationBtn}
+            onPress={() => router.push('/notifications')}
+          >
+            <MaterialIcons name="notifications-none" size={28} color={tokens.colors.text} />
+            {unreadCount > 0 && (
+              <View style={[styles.notificationBadge, { backgroundColor: tokens.colors.error500 }]}>
+                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-      {pendingCount > 0 && (
-        <Card style={[styles.pendingCard, { backgroundColor: tokens.colors.warning500 + '15' }]} elevation="level1">
-          <MaterialIcons name="sync-problem" size={32} color={tokens.colors.warning500} style={{ marginRight: tokens.spacing.md }} />
-          <View style={styles.pendingContent}>
-            <Text style={[tokens.typography.title, { color: tokens.colors.warning500 }]}>
-              {pendingCount} {pendingCount > 1 ? t('dashboard.pending_scans') : t('dashboard.pending_scan')}
-            </Text>
-            <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary }]}>
-              {t('dashboard.sync_offline')}
-            </Text>
+        <View style={styles.brandingHeader}>
+          <Text style={[styles.welcomeToText, { color: tokens.colors.primary800 }]}>Welcome to</Text>
+          <Text style={[styles.welcomeBrandText, { color: '#2C6A4F' }]}>CropScan</Text>
+          <Text style={[styles.welcomeSubtitleText, { color: tokens.colors.textSecondary }]}>
+            {t('dashboard.hero_desc').replace(' and ', '\nand ')}
+          </Text>
+        </View>
+
+        <SearchBar history={history} onRefresh={loadData} />
+        <PendingScansCard 
+          count={pendingCount} 
+          onPress={() => router.push('/scan/pending')} 
+        />
+
+        <View style={styles.actionsSection}>
+          <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
+            {t('dashboard.quick_actions')}
+          </Text>
+          <View style={styles.actionsGrid}>
+            <QuickActionCard
+              icon="photo-camera"
+              title={t('dashboard.actions.scan_title')}
+              description={t('dashboard.actions.scan_desc')}
+              bgToken="success95"
+              iconColor={tokens.colors.primary500}
+              arrowBg={tokens.colors.success80}
+              onPress={handleStartScan}
+            />
+            <QuickActionCard
+              icon="collections-bookmark"
+              title={t('dashboard.actions.library_title')}
+              description={t('dashboard.actions.library_desc')}
+              bgToken="warning95"
+              iconColor={tokens.colors.warning500}
+              arrowBg={tokens.colors.warning80}
+              arrowIconColor="#997300"
+              onPress={() => router.push('/library')}
+            />
+            <QuickActionCard
+              icon="lock-outline"
+              title={t('dashboard.actions.chat_title')}
+              description={t('dashboard.actions.chat_desc').replace(' ', '\n')}
+              isPremium
+              bgToken="accent95"
+              iconColor={tokens.colors.accent50}
+              arrowBg={tokens.colors.accent80}
+              arrowIconColor={tokens.colors.accent700}
+              onPress={() => router.push('/chats')}
+            />
+            <QuickActionCard
+              icon="lightbulb-outline"
+              title={t('dashboard.actions.tips_title')}
+              description={t('dashboard.actions.tips_desc')}
+              bgToken="tertiary95"
+              iconColor={tokens.colors.tertiary700}
+              arrowBg={tokens.colors.tertiary80}
+              arrowIconColor={tokens.colors.tertiary700}
+              onPress={() => router.push('/tips')}
+            />
           </View>
-        </Card>
-      )}
+        </View>
 
-      <View style={styles.quickActions}>
-        <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
-          {t('dashboard.quick_actions')}
-        </Text>
-        <View style={styles.actionsGrid}>
-          <QuickActionCard
-            icon="camera-alt"
-            title={t('dashboard.scan_leaf')}
-            description={t('dashboard.take_photo')}
-            onPress={handleStartScan}
-          />
-          <QuickActionCard
-            icon="library-books"
-            title={t('tabs.library')}
-            description={t('dashboard.learn_crops')}
-            onPress={() => router.push('/library')}
-          />
-          <QuickActionCard
-            icon="history"
-            title={t('tabs.history')}
-            description={t('dashboard.past_diagnoses')}
-            onPress={() => router.push('/history')}
-          />
-          <QuickActionCard
-            icon="lightbulb"
-            title={t('dashboard.tips')}
-            description={t('dashboard.farming_advice')}
+        <View style={styles.insightSection}>
+          <Text style={[styles.sectionTitle, { color: tokens.colors.text, marginBottom: 12 }]}>
+            {t('dashboard.weather.title')}
+          </Text>
+          <InsightCard 
+            text={t('dashboard.weather.advice')}
+            highlight={t('dashboard.weather.highlight')}
             onPress={() => {}}
           />
         </View>
-      </View>
-
-      <View style={styles.tipsSection}>
-        <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.md }]}>
-          {t('dashboard.tips_title')}
-        </Text>
-        <Card style={styles.tipCard} elevation="level1">
-          <MaterialIcons name="healing" size={32} color={tokens.colors.success500} style={{ marginRight: tokens.spacing.md }} />
-          <View style={styles.tipContent}>
-            <Text style={[tokens.typography.title, { color: tokens.colors.text, marginBottom: tokens.spacing.xs }]}>
-              {t('dashboard.early_detection')}
-            </Text>
-            <Text style={[tokens.typography.body, { color: tokens.colors.textSecondary }]}>
-              {t('dashboard.early_detection_desc')}
-            </Text>
-          </View>
-        </Card>
-      </View>
       </ScrollView>
     </View>
+  );
+}
+
+function InsightCard({ text, highlight, onPress }: { text: string, highlight?: string, onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress}>
+      <Card style={[styles.insightCard, { backgroundColor: tokens.colors.secondary95 }]} elevation="level1">
+        <View style={[styles.insightIconContainer, { backgroundColor: tokens.colors.surface }]}>
+          <MaterialIcons name="info" size={24} color={tokens.colors.primary500} />
+        </View>
+        <View style={styles.insightTextContainer}>
+          <Text style={[styles.insightText, { color: tokens.colors.text }]}>
+            {text}
+          </Text>
+          {highlight && (
+            <Text style={[styles.insightHighlight, { color: tokens.colors.primary500 }]}>
+              {highlight}
+            </Text>
+          )}
+        </View>
+        <MaterialIcons name="chevron-right" size={24} color={tokens.colors.primary500} style={{ marginLeft: tokens.spacing.sm }} />
+      </Card>
+    </Pressable>
+  );
+}
+
+const STATIC_SUGGESTIONS = [
+  { id: 's1', display: 'Tomato Late Blight', cropType: 'Tomato', diagnosis: [{ name: 'Late Blight', confidence: 0.9, treatment: 'Apply recommended fungicides.', prevention: 'Practice crop rotation.' }], matchType: 'static' },
+  { id: 's2', display: 'Maize Leaf Rust', cropType: 'Maize', diagnosis: [{ name: 'Leaf Rust', confidence: 0.85, treatment: 'Use resistant varieties.', prevention: 'Ensure proper spacing.' }], matchType: 'static' },
+  { id: 's3', display: 'Cassava Mosaic', cropType: 'Cassava', diagnosis: [{ name: 'Mosaic Disease', confidence: 0.88, treatment: 'Use clean planting materials.', prevention: 'Control whiteflies.' }], matchType: 'static' },
+  { id: 's4', display: 'Yam Anthracnose', cropType: 'Yam', diagnosis: [{ name: 'Anthracnose', confidence: 0.82, treatment: 'Apply organic fungicides.', prevention: 'Maintain field sanitation.' }], matchType: 'static' },
+];
+
+function SearchBar({ history, onRefresh }: { history: any[], onRefresh: () => void }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    loadRecentSearches();
+  }, []);
+
+  const loadRecentSearches = async () => {
+    const rs = await OfflineStorage.getRecentSearches();
+    setRecentSearches(rs);
+  };
+
+  const handleSearch = (text: string) => {
+    const trimmedText = text.trim();
+    setQuery(text);
+    
+    if (trimmedText.length > 0) {
+      const searchTerm = trimmedText.toLowerCase();
+      
+      // 1. Search in static suggestions
+      const staticMatches = STATIC_SUGGESTIONS.filter(s => 
+        s.display.toLowerCase().includes(searchTerm) || 
+        s.cropType.toLowerCase().includes(searchTerm)
+      ).map(s => ({ ...s, priority: s.display.toLowerCase().startsWith(searchTerm) ? 4 : 3 }));
+
+      // 2. Search in user scan history (Should NOT be cleared by search bar)
+      const scanMatches = history.reduce((acc: any[], item) => {
+        const cropType = item.cropType.toLowerCase();
+        const cropMatch = cropType.includes(searchTerm);
+        const cropStarts = cropType.startsWith(searchTerm);
+        
+        const diseaseMatches = item.diagnosis.filter((d: any) => 
+          d.name.toLowerCase().includes(searchTerm) || 
+          (d.treatment && d.treatment.toLowerCase().includes(searchTerm))
+        );
+
+        if (cropMatch || diseaseMatches.length > 0) {
+          acc.push({
+            id: item.id,
+            cropType: item.cropType,
+            diagnosis: item.diagnosis,
+            display: cropMatch ? item.cropType : diseaseMatches[0].name,
+            subDisplay: cropMatch && diseaseMatches.length > 0 ? diseaseMatches[0].name : 'Previous Scan',
+            matchType: 'scan',
+            priority: cropStarts ? 2 : 1
+          });
+        }
+        return acc;
+      }, []);
+
+      // 3. Search in recent searches (Can be cleared)
+      const searchMatches = recentSearches.filter(q => 
+        q.toLowerCase().includes(searchTerm)
+      ).map(q => ({
+        id: `search_${q}`,
+        display: q,
+        subDisplay: 'Recent Search',
+        matchType: 'search',
+        priority: q.toLowerCase().startsWith(searchTerm) ? 1.5 : 0.5,
+        // Since it's a search term, we don't have diagnosis data yet
+        // but we can make it searchable
+        isSearchQuery: true
+      }));
+
+      // Combine and sort by priority
+      const combined = [...staticMatches, ...scanMatches, ...searchMatches].sort((a, b) => b.priority - a.priority);
+      setSuggestions(combined.slice(0, 8));
+      setShowSuggestions(true);
+    } else {
+      // If empty query, show recent scans + some static suggestions + recent searches
+      const recentScans = history.slice(0, 2).map(item => ({
+        ...item,
+        display: item.cropType,
+        subDisplay: item.diagnosis[0]?.name || 'Recent Scan',
+        matchType: 'recent_scan'
+      }));
+
+      const recentQueries = recentSearches.slice(0, 2).map(q => ({
+        id: `q_${q}`,
+        display: q,
+        subDisplay: 'Recent Search',
+        matchType: 'recent_search',
+        isSearchQuery: true
+      }));
+      
+      const defaultStatic = STATIC_SUGGESTIONS.slice(0, 3);
+      setSuggestions([...recentScans, ...recentQueries, ...defaultStatic]);
+      setShowSuggestions(true);
+    }
+  };
+
+  const selectSuggestion = async (suggestion: any) => {
+    if (suggestion.isSearchQuery) {
+      setQuery(suggestion.display);
+      handleSearch(suggestion.display);
+      return;
+    }
+
+    // Save to search history
+    await OfflineStorage.saveRecentSearch(suggestion.display);
+    await loadRecentSearches();
+
+    setQuery('');
+    setShowSuggestions(false);
+    router.push({
+      pathname: '/result',
+      params: {
+        diagnosis: JSON.stringify(suggestion.diagnosis),
+        cropType: suggestion.cropType,
+        image: '',
+      }
+    });
+  };
+
+  const handleClearHistory = async () => {
+    // ONLY clear recent searches, NOT scan history
+    await OfflineStorage.clearRecentSearches();
+    await loadRecentSearches();
+    // Re-trigger search with current query to update UI
+    handleSearch(query);
+  };
+
+  return (
+    <View style={styles.searchSection}>
+      <View style={[styles.searchBar, { backgroundColor: tokens.colors.neutral200 }]}>
+        <MaterialIcons name="search" size={24} color={tokens.colors.neutral700} />
+        <TextInput
+          placeholder={t('dashboard.search_placeholder')}
+          placeholderTextColor={tokens.colors.neutral700}
+          style={styles.searchInput}
+          value={query}
+          onChangeText={handleSearch}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
+          onFocus={() => handleSearch(query)}
+          onSubmitEditing={() => {
+            if (query.trim()) {
+              OfflineStorage.saveRecentSearch(query.trim()).then(loadRecentSearches);
+            }
+          }}
+          underlineColorAndroid="transparent"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => { setQuery(''); handleSearch(''); }}>
+            <MaterialIcons name="close" size={20} color={tokens.colors.neutral700} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {showSuggestions && (suggestions.length > 0 || history.length > 0) && (
+        <View style={styles.suggestionsContainer}>
+          <View style={styles.suggestionsHeader}>
+            <Text style={styles.suggestionsHeaderText}>
+              {query.length > 0 ? 'Search Results' : 'Recent Searches'}
+            </Text>
+            {history.length > 0 && (
+              <TouchableOpacity onPress={handleClearHistory}>
+                <Text style={styles.clearHistoryText}>Clear All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {suggestions.map((item, index) => (
+            <TouchableOpacity 
+              key={item.id} 
+              style={[
+                styles.suggestionItem,
+                index === suggestions.length - 1 && { borderBottomWidth: 0 }
+              ]}
+              onPress={() => selectSuggestion(item)}
+            >
+              <View style={[styles.suggestionIconBg, { backgroundColor: item.matchType === 'disease' ? tokens.colors.accent95 : tokens.colors.success95 }]}>
+                <MaterialIcons 
+                  name={item.matchType === 'disease' ? 'coronavirus' : 'eco'} 
+                  size={18} 
+                  color={item.matchType === 'disease' ? tokens.colors.accent700 : tokens.colors.primary500} 
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.suggestionTitle}>{item.display}</Text>
+                <Text style={styles.suggestionSub}>{item.subDisplay}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={tokens.colors.neutral400} />
+            </TouchableOpacity>
+          ))}
+
+          {query.length > 0 && suggestions.length === 0 && (
+            <View style={styles.noResultsContainer}>
+              <MaterialIcons name="search-off" size={40} color={tokens.colors.neutral300} />
+              <Text style={styles.noResultsText}>No matches found for "{query}"</Text>
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function PendingScansCard({ count, onPress }: { count: number, onPress: () => void }) {
+  const { t } = useTranslation();
+  if (count === 0) return null;
+  
+  return (
+    <View style={styles.pendingSection}>
+      <TouchableOpacity 
+        style={[styles.pendingCard, { backgroundColor: '#FAEFEB' }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.pendingIconContainer}>
+          <MaterialIcons name="sync" size={24} color="#CC5A33" />
+        </View>
+        <View style={styles.pendingTextContainer}>
+          <Text style={[styles.pendingTitle, { color: 'rgba(0,0,0,0.8)' }]}>
+            {count} {count === 1 ? t('dashboard.pending_scan') : t('dashboard.pending_scans')}
+          </Text>
+          <Text style={[styles.pendingSub, { color: 'rgba(0,0,0,0.6)' }]}>
+            {t('dashboard.sync_offline')}
+          </Text>
+        </View>
+        <MaterialIcons name="chevron-right" size={24} color="#CC5A33" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function ScanItem({ crop, status, time, image, onPress }: { 
+  crop: string, 
+  status: 'healthy' | 'pending' | 'infected', 
+  time: string, 
+  image: any,
+  onPress: () => void 
+}) {
+  const getStatusStyle = () => {
+    switch (status) {
+      case 'healthy': return { bg: tokens.colors.success95, text: tokens.colors.success500 };
+      case 'pending': return { bg: tokens.colors.warning95, text: tokens.colors.warning500 };
+      case 'infected': return { bg: tokens.colors.accent95, text: tokens.colors.accent700 };
+    }
+  };
+  const statusStyle = getStatusStyle();
+
+  return (
+    <TouchableOpacity style={styles.scanItemCard} onPress={onPress}>
+      <View style={[styles.scanImageContainer, { backgroundColor: tokens.colors.neutral100 }]}>
+        <Image source={image} style={styles.scanImage} />
+      </View>
+      <Text style={[styles.scanCropName, { color: tokens.colors.text }]}>{crop}</Text>
+      <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+        <Text style={[styles.statusText, { color: statusStyle.text }]}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Text>
+      </View>
+      <Text style={[styles.scanTime, { color: tokens.colors.textSecondary }]}>{time}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function AddScanItem({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <TouchableOpacity 
+      style={[styles.addScanCard, { borderColor: tokens.colors.success500 }]} 
+      onPress={onPress}
+    >
+      <View style={[styles.addScanIconCircle, { backgroundColor: tokens.colors.success95 }]}>
+        <MaterialIcons name="photo-camera" size={24} color={tokens.colors.primary500} />
+      </View>
+      <Text style={[styles.addScanTitle, { color: tokens.colors.success500 }]}>{t('dashboard.scan_new')}</Text>
+      <Text style={[styles.addScanSub, { color: tokens.colors.textSecondary }]}>{t('dashboard.start_new_scan')}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -140,33 +495,51 @@ function QuickActionCard({
   icon,
   title,
   description,
+  bgToken,
+  iconColor,
+  arrowBg,
+  arrowIconColor,
+  isPremium,
   onPress,
 }: {
   icon: keyof typeof MaterialIcons.glyphMap;
   title: string;
   description: string;
+  bgToken: keyof typeof tokens.colors;
+  iconColor: string;
+  arrowBg: string;
+  arrowIconColor?: string;
+  isPremium?: boolean;
   onPress: () => void;
 }) {
   return (
-    <View style={styles.actionCardWrapper}>
-      <Card style={styles.actionCardInner} elevation="level1">
-        <Pressable
-          style={({ pressed }) => [styles.actionPressable, { opacity: pressed ? 0.7 : 1 }]}
-          onPress={onPress}
-          android_ripple={{ color: tokens.colors.neutral200 }}
-        >
-          <View style={[styles.iconContainer, { backgroundColor: tokens.colors.primary50 }]}>
-            <MaterialIcons name={icon} size={28} color={tokens.colors.primary500} />
-          </View>
-          <Text style={[tokens.typography.title, { color: tokens.colors.text, fontSize: 16, marginBottom: tokens.spacing.xs }]}>
-            {title}
-          </Text>
-          <Text style={[tokens.typography.caption, { color: tokens.colors.textSecondary }]}>
-            {description}
-          </Text>
-        </Pressable>
-      </Card>
-    </View>
+    <Pressable
+      style={({ pressed }) => [
+        styles.actionCard,
+        { backgroundColor: tokens.colors[bgToken] as string, opacity: pressed ? 0.9 : 1 }
+      ]}
+      onPress={onPress}
+    >
+      <View style={styles.actionTopContent}>
+        <View style={{ alignSelf: 'flex-start', position: 'relative' }}>
+          <MaterialIcons name={icon} size={32} color={iconColor} style={styles.actionIcon} />
+          {isPremium && (
+            <View style={styles.premiumBadge}>
+              <MaterialIcons name="stars" size={10} color={tokens.colors.accent50} />
+              <Text style={styles.premiumText}>Premium</Text>
+            </View>
+          )}
+        </View>
+        <Text style={[styles.actionTitle, { color: tokens.colors.text }]}>{title}</Text>
+      </View>
+      
+      <View style={styles.actionBottomRow}>
+        <Text style={[styles.actionDesc, { color: tokens.colors.textSecondary }]}>{description}</Text>
+        <View style={[styles.actionArrow, { backgroundColor: arrowBg }]}>
+          <MaterialIcons name="chevron-right" size={20} color={arrowIconColor || tokens.colors.text} />
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -179,63 +552,391 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: tokens.spacing.lg,
+    padding: tokens.spacing.md,
     paddingBottom: tokens.spacing.xxl,
   },
-  heroSection: {
-    marginBottom: tokens.spacing.lg,
-  },
-  heroCard: {
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: tokens.spacing.xl,
+    marginBottom: 8,
+  },
+  greetingText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  notificationBtn: {
+    position: 'relative',
+    padding: 4,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: tokens.colors.surface,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  brandingHeader: {
+    marginBottom: tokens.spacing.xl,
+  },
+  welcomeTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  welcomeToText: {
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 34,
+    marginBottom: 2,
+  },
+  welcomeBrandText: {
+    fontSize: 42,
+    fontWeight: '700',
+    lineHeight: 48,
+    letterSpacing: -1,
+    marginBottom: 8,
+  },
+  welcomeSubtitleText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: tokens.colors.textSecondary,
+    maxWidth: '90%',
+  },
+  searchSection: {
+    marginBottom: tokens.spacing.xl,
+    zIndex: 100,
+    elevation: 10,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 54,
+    borderRadius: 27,
+    paddingHorizontal: tokens.spacing.md,
+  },
+  suggestionsContainer: {
+    backgroundColor: tokens.colors.surface,
+    borderRadius: tokens.radius.lg,
+    marginTop: tokens.spacing.xs,
+    paddingVertical: tokens.spacing.xs,
+    ...tokens.elevation.level3,
+    position: 'absolute',
+    top: 58,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: tokens.colors.neutral100,
+  },
+  suggestionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.colors.neutral100,
+  },
+  suggestionsHeaderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: tokens.colors.neutral500,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  clearHistoryText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: tokens.colors.accent700,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: tokens.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.colors.neutral50,
+  },
+  suggestionIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  suggestionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: tokens.colors.text,
+  },
+  suggestionSub: {
+    fontSize: 12,
+    color: tokens.colors.textSecondary,
+    marginTop: 2,
+  },
+  noResultsContainer: {
+    padding: tokens.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noResultsText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: tokens.colors.neutral500,
+    textAlign: 'center',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: tokens.spacing.sm,
+    fontSize: 14,
+    borderWidth: 0,
+    // @ts-ignore - outlineStyle is for web
+    outlineStyle: 'none',
+  },
+  searchButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pendingSection: {
+    marginBottom: tokens.spacing.xl,
   },
   pendingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: tokens.spacing.lg,
-    borderWidth: 1,
-    borderColor: tokens.colors.warning500 + '30',
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.lg,
   },
-  pendingContent: {
+  pendingIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+  },
+  pendingTextContainer: {
     flex: 1,
   },
-  quickActions: {
+  pendingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  pendingSub: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  actionsSection: {
     marginBottom: tokens.spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: tokens.spacing.md,
     justifyContent: 'space-between',
+    gap: tokens.spacing.md,
   },
-  actionCardWrapper: {
-    width: '48%',
-  },
-  actionCardInner: {
-    padding: 0,
-    overflow: 'hidden',
-  },
-  actionPressable: {
+  actionCard: {
+    width: '47.5%',
     padding: tokens.spacing.md,
-    minHeight: 120,
-    justifyContent: 'center',
+    borderRadius: tokens.radius.lg,
+    minHeight: 150,
+    justifyContent: 'space-between',
+    ...tokens.elevation.level1,
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: tokens.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: tokens.spacing.sm,
-  },
-  tipsSection: {
-    marginBottom: tokens.spacing.lg,
-  },
-  tipCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  tipContent: {
+  actionTopContent: {
     flex: 1,
   },
+  actionIcon: {
+    marginBottom: 12,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  actionBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  actionDesc: {
+    fontSize: 12,
+    lineHeight: 16,
+    flex: 1,
+    marginRight: tokens.spacing.xs,
+  },
+  actionArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: tokens.colors.surface,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    position: 'absolute',
+    top: 0,
+    left: 38,
+    borderWidth: 1,
+    borderColor: tokens.colors.surface,
+    ...tokens.elevation.level1,
+  },
+  premiumText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: tokens.colors.accent50,
+    marginLeft: 2,
+  },
+  insightSection: {
+    marginBottom: 0,
+  },
+  insightCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.lg,
+  },
+  insightIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+  },
+  insightTextContainer: {
+    flex: 1,
+  },
+  insightText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 2,
+  },
+  insightHighlight: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+  },
+  recentScansSection: {
+    marginBottom: tokens.spacing.lg,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: tokens.spacing.md,
+    marginBottom: tokens.spacing.md,
+  },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scansList: {
+    paddingRight: tokens.spacing.md,
+  },
+  addScanCard: {
+    width: 130,
+    height: 175,
+    borderRadius: tokens.radius.lg,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+    padding: tokens.spacing.sm,
+  },
+  addScanIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: tokens.spacing.sm,
+  },
+  addScanTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  addScanSub: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  scanItemCard: {
+    width: 130,
+    height: 175,
+    backgroundColor: tokens.colors.surface,
+    borderRadius: tokens.radius.lg,
+    alignItems: 'center',
+    marginRight: tokens.spacing.md,
+    padding: tokens.spacing.sm,
+    // Add subtle shadow for depth
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  scanImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  scanImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  scanCropName: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  scanTime: {
+    fontSize: 10,
+  },
 });
+

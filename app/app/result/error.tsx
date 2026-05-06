@@ -21,7 +21,7 @@ export default function ErrorResultScreen() {
     <View style={styles.container}>
       <AppHeader title={t('result.analysis_error_title')} />
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.error50 }]}>
+        <View style={[styles.iconContainer, { backgroundColor: tokens.colors.error100 }]}>
           <Text style={styles.icon}>❌</Text>
         </View>
 
@@ -32,7 +32,7 @@ export default function ErrorResultScreen() {
           {error || t('result.generic_error')}
         </Text>
 
-        <View style={[styles.errorCard, { backgroundColor: tokens.colors.error50 }]}>
+        <View style={[styles.errorCard, { backgroundColor: tokens.colors.error100 }]}>
           <Text style={styles.errorIcon}>💡</Text>
           <View style={styles.errorContent}>
             <Text style={[styles.errorTitle, { color: tokens.colors.text }]}>

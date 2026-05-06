@@ -27,11 +27,7 @@ export default function ResultScreen() {
   const diagnoses: Diagnosis[] = diagnosis ? JSON.parse(diagnosis) : [];
 
   useEffect(() => {
-    if (diagnoses.length > 0) {
-      const topDiagnosis = diagnoses[0];
-      const scanId = `scan_${Date.now()}`;
-      OfflineStorage.cacheDiagnosis(scanId, diagnoses);
-    }
+    // No saving here anymore to prevent duplication when viewing old results
   }, []);
 
   const getSeverityColor = (severity: string) => {
@@ -74,6 +70,12 @@ export default function ResultScreen() {
     <View style={styles.container}>
       <AppHeader 
         title={t('result.title')} 
+        showBack={false}
+        rightElement={
+          <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+            <Text style={{ color: tokens.colors.primary500, fontWeight: '700', paddingRight: 10 }}>Done</Text>
+          </TouchableOpacity>
+        }
       />
 
       <ScrollView
@@ -195,14 +197,7 @@ export default function ResultScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.newScanLink}
-          onPress={handleNewScan}
-        >
-          <Text style={[styles.newScanLinkText, { color: tokens.colors.textSecondary }]}>
-            {t('common.new_scan') || 'Start New Scan'}
-          </Text>
-        </TouchableOpacity>
+
       </View>
     </View>
   );
@@ -373,14 +368,5 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  newScanLink: {
-    alignItems: 'center',
-    padding: tokens.spacing.xs,
-  },
-  newScanLinkText: {
-    fontSize: 14,
-    fontWeight: '500',
-    textDecorationLine: 'underline',
   },
 });

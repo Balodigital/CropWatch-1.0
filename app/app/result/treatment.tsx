@@ -96,7 +96,7 @@ export default function TreatmentScreen() {
           </View>
         ))}
 
-        <View style={[styles.warningCard, { backgroundColor: tokens.colors.warning50 }]}>
+        <View style={[styles.warningCard, { backgroundColor: tokens.colors.warning100 }]}>
           <Text style={styles.warningIcon}>⚠️</Text>
           <View style={styles.warningContent}>
             <Text style={[styles.warningTitle, { color: tokens.colors.text }]}>

@@ -15,6 +15,7 @@ import { tokens } from '@/constants/tokens';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from '@/components/ui/Button';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { optimizeImageForUpload } from '@/lib/images';
 
 const { width } = Dimensions.get('window');
 
@@ -31,14 +32,12 @@ export default function CameraScreen() {
       setIsCapturing(true);
       try {
         const photo = await cameraRef.current.takePictureAsync({
-          base64: true,
           quality: 0.8,
         });
-        if (photo?.base64) {
-          const base64Image = `data:image/jpeg;base64,${photo.base64}`;
-          router.push({
+        if (photo?.uri) {
+          router.replace({
             pathname: '/scan/preview',
-            params: { image: base64Image },
+            params: { image: photo.uri },
           });
         }
       } catch (error) {
@@ -50,19 +49,19 @@ export default function CameraScreen() {
   };
 
   const pickImage = async () => {
+    if (isCapturing) return;
+    
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
-      base64: true,
     });
 
-    if (!result.canceled && result.assets[0]?.base64) {
-      const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      router.push({
+    if (!result.canceled && result.assets[0]?.uri) {
+      router.replace({
         pathname: '/scan/preview',
-        params: { image: base64Image },
+        params: { image: result.assets[0].uri },
       });
     }
   };
@@ -78,7 +77,7 @@ export default function CameraScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.container, { backgroundColor: tokens.colors.background }]}>
-        <AppHeader title="" showBack onBack={() => router.back()} />
+        <AppHeader title="" showBack />
         <View style={styles.permissionContainer}>
           <MaterialIcons name="camera-alt" size={80} color={tokens.colors.primary500} style={{ marginBottom: tokens.spacing.xl }} />
           <Text style={[tokens.typography.heading, { color: tokens.colors.text, marginBottom: tokens.spacing.md, textAlign: 'center' }]}>
@@ -116,8 +115,7 @@ export default function CameraScreen() {
           <AppHeader 
             title={t('scan.title')} 
             showBack 
-            onBack={() => router.back()}
-            rightAction={<View style={{ width: 40 }} />}
+            rightElement={<View style={{ width: 40 }} />}
           />
 
           <View style={styles.frameContainer}>
@@ -134,8 +132,9 @@ export default function CameraScreen() {
 
           <View style={styles.controls}>
             <Pressable
-              style={({ pressed }) => [styles.galleryButtonLarge, { opacity: pressed ? 0.7 : 1 }]}
+              style={({ pressed }) => [styles.galleryButtonLarge, { opacity: pressed || isCapturing ? 0.7 : 1 }]}
               onPress={pickImage}
+              disabled={isCapturing}
               hitSlop={16}
             >
               <MaterialIcons name="photo-library" size={32} color={tokens.colors.surface} />
@@ -152,6 +151,11 @@ export default function CameraScreen() {
               <View style={styles.captureButtonInner} />
             </Pressable>
             
+            {isCapturing && (
+              <View style={styles.loadingOverlay}>
+                <Text style={styles.loadingText}>{t('scan.processing') || 'Processing...'}</Text>
+              </View>
+            )}
           </View>
         </View>
       </CameraView>
@@ -281,5 +285,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: tokens.spacing.xxl,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: -100,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: tokens.colors.surface,
+    fontSize: 16,
+    fontWeight: '600',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
 });

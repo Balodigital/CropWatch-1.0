@@ -3,13 +3,13 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
   TouchableOpacity, 
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/Typography';
@@ -21,7 +21,10 @@ import { StrengthMeter } from '@/components/auth/StrengthMeter';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { SuccessOverlay } from '@/components/auth/SuccessOverlay';
 import { usePasswordValidation } from '@/hooks/use-password-validation';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
@@ -31,8 +34,11 @@ export default function RegisterScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   
   const router = useRouter();
+  const { setOnboardingFinished } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { requirements, strength, isValid: passwordValid } = usePasswordValidation(password);
 
@@ -46,52 +52,55 @@ export default function RegisterScreen() {
     try {
       const { error } = await signUp(email, password, { full_name: fullName });
       if (error) {
-        Alert.alert('Sign Up Failed', error);
+        Alert.alert(t('auth.register_failed'), error);
       } else {
         setShowSuccess(true);
       }
     } catch (err: any) {
-      Alert.alert('Sign Up Failed', 'An unexpected error occurred.');
+      Alert.alert(t('auth.register_failed'), t('auth.unexpected_error'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: 20 }]} showsVerticalScrollIndicator={false}>
           <TouchableOpacity 
-            onPress={() => router.back()} 
+            onPress={async () => {
+              await setOnboardingFinished(false);
+              router.replace('/');
+            }} 
             style={styles.backButton}
           >
             <ChevronLeft size={24} color={theme.primary} />
-            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>Back</Text>
+            <Text style={[Typography.labelLarge, { color: theme.primary, marginLeft: 4 }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
           <View style={styles.header}>
             <Text style={[Typography.headlineLarge, { color: theme.onSurface }]}>
-              Create Account
+              {t('auth.register_title')}
             </Text>
             <Text style={[Typography.bodyLarge, { color: theme.onSurfaceVariant, marginTop: 8 }]}>
-              Join CropWatch and start protecting your harvest
+              {t('auth.register_desc')}
             </Text>
           </View>
 
           <View style={styles.form}>
             <Input
-              label="Full Name"
-              placeholder="Enter your full name"
+              label={t('auth.full_name_label')}
+              placeholder={t('auth.full_name_placeholder')}
               value={fullName}
               onChangeText={setFullName}
               success={fullName.trim().length > 2}
             />
             <Input
-              label="Email"
-              placeholder="Enter your email"
+              label={t('auth.email_label')}
+              placeholder={t('auth.email_placeholder')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -99,8 +108,8 @@ export default function RegisterScreen() {
               success={emailValid}
             />
             <Input
-              label="Password"
-              placeholder="Create a password"
+              label={t('auth.password_label')}
+              placeholder={t('auth.password_placeholder')}
               value={password}
               onChangeText={setPassword}
               isPassword
@@ -111,7 +120,7 @@ export default function RegisterScreen() {
             <PasswordRequirements requirements={requirements} />
 
             <Button
-              title="Create Account"
+              title={t('auth.register_title')}
               onPress={handleSignUp}
               loading={loading}
               disabled={!formValid}
@@ -120,11 +129,11 @@ export default function RegisterScreen() {
 
             <View style={styles.footer}>
               <Text style={[Typography.bodyMedium, { color: theme.onSurfaceVariant }]}>
-                Already have an account?{' '}
+                {t('auth.have_account')}{' '}
               </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
                 <Text style={[Typography.labelLarge, { color: theme.primary, fontWeight: '700' }]}>
-                  Sign In
+                  {t('auth.login')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -139,7 +148,7 @@ export default function RegisterScreen() {
           router.replace('/(auth)/login');
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -150,7 +159,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 20,
     paddingBottom: 40,
   },
   backButton: {

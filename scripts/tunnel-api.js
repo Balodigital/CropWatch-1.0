@@ -1,4 +1,5 @@
-const { spawn } = require('child_process');
+const { fork, spawn } = require('child_process');
+
 const path = require('path');
 
 const isWin = process.platform === 'win32';
@@ -10,10 +11,10 @@ let tunnelUrl = null;
 let apiProcess = null;
 
 // 1. Start API Server
-apiProcess = spawn('node', [`"${path.join(__dirname, '..', 'api', 'server.js')}"`], {
-    stdio: 'inherit',
-    shell: true
+apiProcess = fork(path.join(__dirname, '..', 'api', 'server.js'), {
+    stdio: 'inherit'
 });
+
 
 // 2. Start Cloudflare Tunnel for API (Port 3000)
 const tunnelProcess = spawn(npxCmd, ['cloudflared', 'tunnel', '--url', 'http://localhost:3000'], {

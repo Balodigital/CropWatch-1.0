@@ -15,14 +15,14 @@ export default function PreviewScreen() {
   const { t } = useTranslation();
 
   const handleContinue = () => {
-    router.replace({
+    router.push({
       pathname: '/scan/crop-select',
       params: { image },
     });
   };
 
   const handleRetake = () => {
-    router.back();
+    router.replace('/scan/camera');
   };
 
   if (!image) {

@@ -45,11 +45,11 @@ function updateAppEnv(url) {
 function startAppTunnel() {
     console.log('📱 Starting Mobile App Tunnel...');
     
-    const appTunnel = spawn('node', [path.join(__dirname, 'tunnel-app.js')], {
+    const appTunnel = fork(path.join(__dirname, 'tunnel-app.js'), {
         stdio: 'inherit',
-        shell: true,
         cwd: path.join(__dirname, '..', 'app')
     });
+
 
     appTunnel.on('close', (code) => {
         console.log(`\n👋 App process exited with code ${code}`);

@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { useAuth } from '@/context/AuthContext';
+
 import { SettingsItem } from '@/components/profile/SettingsItem';
 import { SettingsSection } from '@/components/profile/SettingsSection';
 import { ToggleItem } from '@/components/profile/ToggleItem';
@@ -25,7 +26,6 @@ export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const { user, profile, signOut, signOutAllDevices, deactivateAccount } = useAuth();
   
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [biometricLock, setBiometricLock] = useState(false);
   
@@ -35,15 +35,25 @@ export default function SettingsScreen() {
   const currentLanguage = i18n.language;
 
   const handleLogout = async () => {
-    setLogoutModalVisible(false);
-    await signOut();
-    router.replace('/(auth)/login');
+    try {
+      setLogoutModalVisible(false);
+      await signOut();
+      // Global guard in _layout.tsx will handle redirection to login
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert(t('common.error'), t('settings.error_logout'));
+    }
   };
 
   const handleSignOutAll = async () => {
-    setSignOutAllModalVisible(false);
-    await signOutAllDevices();
-    router.replace('/(auth)/login');
+    try {
+      setSignOutAllModalVisible(false);
+      await signOutAllDevices();
+      // Global guard in _layout.tsx will handle redirection to login
+    } catch (error) {
+      console.error('Sign out all error:', error);
+      Alert.alert(t('common.error'), t('settings.error_signout_all'));
+    }
   };
 
   return (
@@ -67,7 +77,7 @@ export default function SettingsScreen() {
             />
             <View style={styles.profileInfo}>
               <Text style={[tokens.typography.title, styles.profileName]}>
-                {profile?.full_name || user?.user_metadata?.full_name || 'CropWatch User'}
+                {profile?.full_name || user?.user_metadata?.full_name || t('settings.default_user')}
               </Text>
               <Text style={[tokens.typography.caption, styles.profileEmail]}>
                 {user?.email}
@@ -82,12 +92,6 @@ export default function SettingsScreen() {
 
       {/* Appearance & Notifications */}
       <SettingsSection title={t('settings.preferences')}>
-        <ToggleItem
-          icon="dark-mode"
-          title={t('settings.dark_mode')}
-          value={darkMode}
-          onValueChange={setDarkMode}
-        />
         <ToggleItem
           icon="notifications-none"
           title={t('settings.notifications')}
@@ -127,7 +131,7 @@ export default function SettingsScreen() {
         <SettingsItem
           icon="language"
           title={t('settings.language')}
-          value={currentLanguage === 'en' ? 'English' : 'Pidgin'}
+          subtitle={currentLanguage === 'en' ? 'English' : 'Pidgin'}
           onPress={() => router.push('/profile/language')}
         />
       </SettingsSection>
@@ -142,7 +146,7 @@ export default function SettingsScreen() {
         <SettingsItem
           icon="headset-mic"
           title={t('settings.contact')}
-          onPress={() => Linking.openURL('mailto:support@cropwatch.app')}
+          onPress={() => router.push('/support')}
         />
         <SettingsItem
           icon="description"
@@ -167,17 +171,17 @@ export default function SettingsScreen() {
           title={t('common.logout')}
           onPress={() => setLogoutModalVisible(true)}
           destructive
-          showChevron={false}
+          showArrow={false}
         />
       </SettingsSection>
 
       <View style={styles.footer}>
         <Text style={styles.versionText}>{t('settings.version')}</Text>
-        <Pressable onPress={() => Alert.alert('Update', 'You are using the latest version.')}>
+        <Pressable onPress={() => Alert.alert(t('settings.update_title'), t('settings.update_msg'))}>
           <Text style={[styles.footerText, { color: tokens.colors.primary500 }]}>{t('settings.check_updates')}</Text>
         </Pressable>
         <Text style={styles.footerText}>
-          Made with 💚 for Nigerian Farmers
+          {t('settings.made_with')}
         </Text>
       </View>
 
@@ -259,7 +263,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     ...tokens.typography.caption,
-    color: tokens.colors.neutral400,
+    color: '#666666',
     fontSize: 11,
   },
 });

@@ -1,104 +1,101 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { tokens } from '@/constants/tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AppHeaderProps {
-  title?: string;
+  title: string;
+  subtitle?: string;
   showBack?: boolean;
   onBack?: () => void;
-  rightAction?: React.ReactNode;
-  leftAction?: React.ReactNode;
+  rightElement?: React.ReactNode;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-  title,
+export const AppHeader: React.FC<AppHeaderProps> = ({ 
+  title, 
+  subtitle,
   showBack = true,
   onBack,
-  rightAction,
-  leftAction,
+  rightElement
 }) => {
   const router = useRouter();
-  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const handleBack = () => {
     if (onBack) {
       onBack();
-      return;
-    }
-
-    if (navigation.canGoBack()) {
-      navigation.goBack();
     } else {
-      router.replace('/(tabs)');
+      router.back();
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.leftContainer}>
-        {showBack ? (
-          <Pressable
-            onPress={handleBack}
-            style={({ pressed }) => [
-              styles.backButton,
-              { opacity: pressed ? 0.7 : 1 }
-            ]}
-          >
-            <MaterialIcons name="arrow-back" size={24} color={tokens.colors.text} />
-          </Pressable>
-        ) : (
-          leftAction
-        )}
-      </View>
-
-      <View style={styles.titleContainer}>
-        {title && (
-          <Text style={[tokens.typography.title, styles.title]} numberOfLines={1}>
-            {title}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.rightContainer}>
-        {rightAction}
+    <View style={[styles.outerContainer, { paddingTop: insets.top }]}>
+      <View style={styles.container}>
+        <View style={styles.leftSection}>
+          {showBack && (
+            <TouchableOpacity 
+              onPress={handleBack} 
+              style={styles.backButton}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="arrow-back-ios" size={20} color={tokens.colors.primary500} />
+            </TouchableOpacity>
+          )}
+          <View>
+            <Text style={[tokens.typography.heading, styles.title]}>{title}</Text>
+            {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          </View>
+        </View>
+        <View style={styles.rightSection}>
+          {rightElement}
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: Platform.OS === 'ios' ? 44 : 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: tokens.colors.background,
-    paddingHorizontal: tokens.spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  outerContainer: {
+    backgroundColor: tokens.colors.surface,
+    borderBottomWidth: 1,
     borderBottomColor: tokens.colors.border,
   },
-  leftContainer: {
-    width: 40,
-    justifyContent: 'center',
+  container: {
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: tokens.spacing.lg,
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   backButton: {
-    padding: tokens.spacing.xs,
-    marginLeft: -tokens.spacing.xs,
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: tokens.spacing.sm,
+    backgroundColor: tokens.colors.primary50,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
     color: tokens.colors.text,
+    fontSize: 20,
+    fontWeight: '700',
   },
-  rightContainer: {
-    width: 40,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+  subtitle: {
+    color: tokens.colors.textSecondary,
+    fontSize: 12,
+    marginTop: -2,
   },
 });

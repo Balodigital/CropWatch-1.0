@@ -1,5 +1,5 @@
 -- ==========================================
--- CropWatch PostgreSQL Schema (Supabase)
+-- CropScan PostgreSQL Schema (Supabase)
 -- ==========================================
 
 -- Enable the UUID extension

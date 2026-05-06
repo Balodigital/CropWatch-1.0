@@ -23,7 +23,7 @@ export default function PermissionsScreen() {
       
       if (cameraStatus !== 'granted') {
         Alert.alert(
-          'Permission Required',
+          t('permissions.required'),
           t('camera_permission'),
           [{ text: 'OK' }]
         );
@@ -48,7 +48,7 @@ export default function PermissionsScreen() {
           <Text style={styles.icon}>📷</Text>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>Camera Access</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('permissions.title')}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
           {t('camera_permission')}
         </Text>
@@ -56,14 +56,14 @@ export default function PermissionsScreen() {
         <View style={styles.permissionsList}>
           <PermissionItem
             icon="📸"
-            title="Camera"
-            description="Take photos of your crop leaves"
+            title={t('permissions.camera')}
+            description={t('permissions.camera_desc')}
             colors={colors}
           />
           <PermissionItem
             icon="📁"
-            title="Photo Library"
-            description="Select existing photos"
+            title={t('permissions.library')}
+            description={t('permissions.library_desc')}
             colors={colors}
           />
         </View>
@@ -74,7 +74,7 @@ export default function PermissionsScreen() {
             onPress={requestPermissions}
             activeOpacity={0.8}
           >
-            <Text style={styles.primaryButtonText}>Allow Access</Text>
+            <Text style={styles.primaryButtonText}>{t('permissions.allow')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -83,7 +83,7 @@ export default function PermissionsScreen() {
             activeOpacity={0.8}
           >
             <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-              Skip for Now
+              {t('permissions.skip')}
             </Text>
           </TouchableOpacity>
         </View>

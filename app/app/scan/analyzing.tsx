@@ -4,15 +4,18 @@ import { StyleSheet, View, Text, Animated, Easing } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tokens } from '@/constants/tokens';
 import { submitDiagnosis } from '@/lib/api';
+import { OfflineStorage } from '@/lib/offline';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { optimizeImageForUpload } from '@/lib/images';
 
 export default function AnalyzingScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { image, cropType, description } = useLocalSearchParams<{
+  const { image, cropType, description, pendingId } = useLocalSearchParams<{
     image: string;
     cropType: string;
     description?: string;
+    pendingId?: string;
   }>();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -57,11 +60,21 @@ export default function AnalyzingScreen() {
 
   const runAnalysis = async () => {
     try {
+      // Optimize image here if it's a URI (not already base64)
+      let finalImage = image || '';
+      if (finalImage && !finalImage.startsWith('data:image/')) {
+        finalImage = await optimizeImageForUpload(finalImage);
+      }
+
       const result = await submitDiagnosis(
-        image || '',
+        finalImage,
         description || '',
         cropType || ''
       );
+
+      if (result.success && pendingId) {
+        await OfflineStorage.removePendingScan(pendingId);
+      }
 
       if (result.success) {
         if (result.offline) {
@@ -72,13 +85,17 @@ export default function AnalyzingScreen() {
               cropType,
             },
           });
-        } else {
+        } else if (result.diagnosis) {
+          // Save to history once here
+          const scanId = `scan_${Date.now()}`;
+          await OfflineStorage.cacheDiagnosis(scanId, result.diagnosis, cropType || 'Crop');
+
           router.replace({
             pathname: '/result',
             params: {
               diagnosis: JSON.stringify(result.diagnosis),
               cropType,
-              image,
+              image: finalImage,
             },
           });
         }

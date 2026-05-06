@@ -46,7 +46,8 @@ function RootLayoutNav() {
     if (loading || (!fontsLoaded && !fontError)) return;
 
     const isSplash = segments[0] === 'splash';
-    const inOnboardingGroup = segments[0] === '(onboarding)';
+    const isOnboarding = segments[0] === 'onboarding';
+    const isVerify = segments[0] === 'verify';
     const inAuthGroup = segments[0] === '(auth)';
 
     // Let the splash screen finish its 3-second timeout natively
@@ -55,13 +56,13 @@ function RootLayoutNav() {
     if (!hasFinishedOnboarding) {
       // Force user to onboarding if they haven't finished it
       // @ts-ignore
-      if (!inOnboardingGroup) router.replace('/(onboarding)/index');
+      if (!isOnboarding) router.replace('/onboarding');
     } else if (!session) {
-      // Force user to login if they have no active session
-      if (!inAuthGroup) router.replace('/(auth)/login');
+      // Force user to login if they have no active session (except for verify screen)
+      if (!inAuthGroup && !isVerify) router.replace('/(auth)/login');
     } else {
-      // If fully authenticated, don't let them sit on login/onboarding
-      if (inAuthGroup || inOnboardingGroup) router.replace('/(tabs)');
+      // If fully authenticated, don't let them sit on login/onboarding/verify
+      if (inAuthGroup || isOnboarding || isVerify) router.replace('/(tabs)');
     }
   }, [loading, fontsLoaded, fontError, session, hasFinishedOnboarding, segments]);
 
@@ -90,12 +91,20 @@ function RootLayoutNav() {
   );
 }
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { NotificationProvider } from '@/context/NotificationContext';
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <RootLayoutNav />
+          </NotificationProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

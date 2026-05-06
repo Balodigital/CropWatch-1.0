@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { AuthError, AuthResponse, UserResponse } from '@supabase/supabase-js';
+import { AuthError } from '@supabase/supabase-js';
 
 /**
  * Handle Supabase Auth errors gracefully
@@ -26,6 +26,7 @@ export const signUp = async (email: string, password: string, metadata: any) => 
       password,
       options: {
         data: metadata,
+        emailRedirectTo: 'cropscan://verify',
       },
     });
 
@@ -59,7 +60,7 @@ export const signIn = async (email: string, password: string) => {
 export const resetPassword = async (email: string) => {
   try {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'cropwatch://reset-password',
+      redirectTo: 'cropscan://reset-password',
     });
 
     if (error) {
@@ -71,3 +72,5 @@ export const resetPassword = async (email: string) => {
     return { data: null, error: 'An unexpected error occurred. Please try again.' };
   }
 };
+
+

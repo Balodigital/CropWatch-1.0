@@ -79,7 +79,7 @@ export default function PreventionScreen() {
           </View>
         </View>
 
-        <View style={[styles.alertCard, { backgroundColor: tokens.colors.error50 }]}>
+        <View style={[styles.alertCard, { backgroundColor: tokens.colors.error100 }]}>
           <Text style={styles.alertIcon}>🚨</Text>
           <View style={styles.alertContent}>
             <Text style={[styles.alertTitle, { color: tokens.colors.error500 }]}>
