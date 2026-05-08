@@ -53,14 +53,14 @@ export interface Crop {
 }
 
 export const CROP_IMAGES: Record<string, any> = {
-  tomato: require('@/assets/images/crops/tomato.png'),
-  cassava: require('@/assets/images/crops/cassava.png'),
-  maize: require('@/assets/images/crops/maize.png'),
-  pepper: require('@/assets/images/crops/pepper.png'),
-  rice: require('@/assets/images/crops/rice.png'),
-  yam: require('@/assets/images/crops/yam.png'),
-  cowpea: require('@/assets/images/crops/cowpea.png'),
-  cocoa: require('@/assets/images/crops/cocoa.png'),
+  tomato: require('@/assets/images/crops/tomato.jpg'),
+  cassava: require('@/assets/images/crops/cassava.jpg'),
+  maize: require('@/assets/images/crops/maize.jpg'),
+  pepper: require('@/assets/images/crops/pepper.jpg'),
+  rice: require('@/assets/images/crops/rice.jpg'),
+  yam: require('@/assets/images/crops/yam.jpg'),
+  cowpea: require('@/assets/images/crops/cowpea.jpg'),
+  cocoa: require('@/assets/images/crops/cocoa.jpg'),
 };
 
 export const CROPS_DATA: Crop[] = [
