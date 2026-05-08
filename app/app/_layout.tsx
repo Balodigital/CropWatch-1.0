@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Updates from 'expo-updates';
 
 // Load i18n instance
 import '../i18n';
@@ -40,6 +41,26 @@ function RootLayoutNav() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError, loading]);
+
+  // Handle OTA Updates automatically
+  useEffect(() => {
+    async function onFetchUpdateAsync() {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync();
+        }
+      } catch (error) {
+        // You can also add an error handler here
+        console.log(`Error fetching latest update: ${error}`);
+      }
+    }
+
+    if (!__DEV__) {
+      onFetchUpdateAsync();
+    }
+  }, []);
 
   // Global Route Guard
   useEffect(() => {
