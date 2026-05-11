@@ -1,0 +1,30 @@
+.solution-callout {
+  background: var(--sys-color-primary-roles-primary);
+  padding: var(--space-4xl) 0;
+  text-align: center;
+}
+
+.solution-callout-content {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+.callout-rule {
+  width: 60px;
+  height: 1px;
+  background: var(--ref-color-primary-primary80);
+  opacity: 0.4;
+}
+
+.solution-callout h2 {
+  color: var(--ref-color-primary-primary95);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1.3;
+  font-style: italic;
+  font-weight: 500;
+  margin: 0;
+}

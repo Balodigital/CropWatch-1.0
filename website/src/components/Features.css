@@ -1,0 +1,122 @@
+.features-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2xl);
+  align-items: stretch;
+}
+
+.feature-card-large {
+  background: var(--primary);
+  color: white;
+  padding: var(--space-3xl);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card-large::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.f-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.feature-card-large h2 {
+  color: white;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.feature-card-large p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  max-width: 440px;
+}
+
+.f-icon-main {
+  margin: var(--space-lg) 0;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+/* Right Grid */
+.features-grid-asymmetric {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.feature-item-premium {
+  background: white;
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--outline);
+  transition: all var(--transition-standard);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.feature-item-premium:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.f-item-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-cream);
+  color: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-standard);
+}
+
+.feature-item-premium:hover .f-item-icon {
+  background: var(--primary);
+  color: white;
+}
+
+.feature-item-premium h4 {
+  font-size: 1.15rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  margin: 0;
+}
+
+.feature-item-premium p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+  .features-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .features-grid-asymmetric {
+    grid-template-columns: 1fr;
+  }
+}

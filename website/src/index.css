@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
+@import './tokens.css';
+
+:root {
+  /* Brand Typography */
+  --font-serif: 'DM Serif Display', serif;
+  --font-sans: 'DM Sans', sans-serif;
+
+  /* Color Mapping from Tokens */
+  --primary: var(--ref-color-primary-key-color); /* Forest Green */
+  --primary-dark: var(--ref-color-primary-primary10);
+  --primary-light: var(--ref-color-primary-primary80);
+  
+  --accent: var(--ref-color-secondary-key-color); /* Soft Lime */
+  --accent-container: var(--ref-color-secondary-secondary90);
+  
+  --bg-cream: #FDFBF7; /* Warm Neutral based on brand vibe */
+  --surface: var(--sys-color-surface-roles-surface-container-lowest);
+  --surface-elevated: var(--sys-color-surface-roles-surface-container-low);
+  
+  --text-main: var(--sys-color-surface-roles-on-surface);
+  --text-muted: var(--sys-color-surface-roles-on-surface-variant);
+  
+  --outline: var(--sys-color-outline-roles-outline-variant);
+
+  /* Spacing */
+  --space-unit: 8px;
+  --space-xs: calc(var(--space-unit) * 0.5);
+  --space-sm: var(--space-unit);
+  --space-md: calc(var(--space-unit) * 2);
+  --space-lg: calc(var(--space-unit) * 4);
+  --space-xl: calc(var(--space-unit) * 6);
+  --space-2xl: calc(var(--space-unit) * 8);
+  --space-3xl: calc(var(--space-unit) * 12);
+
+  /* Elevation */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.08);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.12);
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-standard: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  --transition-fast: 0.2s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-cream);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--primary-dark);
+}
+
+p {
+  color: var(--text-muted);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+/* Utilities */
+.text-white { color: white !important; }
+.opacity-80 { opacity: 0.8; }
+.opacity-60 { opacity: 0.6; }
+
+.section-padding {
+  padding: var(--space-3xl) 0;
+}
+
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.grid { display: grid; }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Radial Glows */
+.radial-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(75, 180, 134, 0.1) 0%, rgba(253, 251, 247, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Buttons */
+.btn {
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all var(--transition-standard);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(44, 106, 79, 0.2);
+  filter: brightness(1.1);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.btn-ghost:hover {
+  background: var(--primary);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 0 var(--space-md); }
+  .section-padding { padding: var(--space-2xl) 0; }
+}
