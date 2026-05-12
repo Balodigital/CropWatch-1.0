@@ -26,7 +26,7 @@ export const signUp = async (email: string, password: string, metadata: any) => 
       password,
       options: {
         data: metadata,
-        emailRedirectTo: 'cropscan://verify',
+        emailRedirectTo: 'https://website-cropscan-10.vercel.app/verify',
       },
     });
 

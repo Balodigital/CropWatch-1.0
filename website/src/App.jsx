@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
+import Verify from './pages/Verify';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/verify" element={<Verify />} />
           </Routes>
         </main>
         <Footer />
