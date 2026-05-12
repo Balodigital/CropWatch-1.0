@@ -62,6 +62,7 @@ html {
 
 body {
   font-family: var(--font-sans);
+  font-size: 1rem;
   background-color: var(--bg-cream);
   color: var(--text-main);
   line-height: 1.6;
