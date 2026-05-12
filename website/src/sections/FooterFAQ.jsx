@@ -91,10 +91,10 @@ export const Footer = () => {
         <div className="footer-nav">
           <h4>Navigation</h4>
           <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a href="/#home">Home</a></li>
+            <li><a href="/#features">Features</a></li>
+            <li><a href="/#how-it-works">How It Works</a></li>
+            <li><a href="/#faq">FAQ</a></li>
           </ul>
         </div>
 

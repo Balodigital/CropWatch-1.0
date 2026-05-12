@@ -27,9 +27,9 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="nav-links desktop-only">
-          <a href="#features" className="nav-link">Features</a>
-          <a href="#how-it-works" className="nav-link">How It Works</a>
-          <a href="#faq" className="nav-link">FAQ</a>
+          <a href="/#features" className="nav-link">Features</a>
+          <a href="/#how-it-works" className="nav-link">How It Works</a>
+          <a href="/#faq" className="nav-link">FAQ</a>
           <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
             Download App <Download size={18} />
           </a>
@@ -51,9 +51,9 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -20 }}
           >
             <div className="mobile-links">
-              <a href="#features" onClick={() => setIsOpen(false)}>Features</a>
-              <a href="#how-it-works" onClick={() => setIsOpen(false)}>How It Works</a>
-              <a href="#faq" onClick={() => setIsOpen(false)}>FAQ</a>
+              <a href="/#features" onClick={() => setIsOpen(false)}>Features</a>
+              <a href="/#how-it-works" onClick={() => setIsOpen(false)}>How It Works</a>
+              <a href="/#faq" onClick={() => setIsOpen(false)}>FAQ</a>
               <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary full-width" target="_blank" rel="noopener noreferrer">
                 Download App <Download size={18} />
               </a>
