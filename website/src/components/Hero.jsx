@@ -47,7 +47,7 @@ const Hero = () => {
           </motion.p>
           
           <motion.div variants={itemVariants} className="hero-actions">
-            <a href="/downloads/cropscan.apk" className="btn btn-primary" download="cropscan.apk">
+            <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
               Download on Android <Download size={18} />
             </a>
           </motion.div>

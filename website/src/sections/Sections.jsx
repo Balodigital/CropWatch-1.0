@@ -72,7 +72,7 @@ export const DownloadSection = () => {
           <p className="cta-tagline">Join 50,000+ farmers already protecting their crops.</p>
           
           <div className="cta-actions-wrapper">
-            <a href="/downloads/cropscan.apk" className="btn btn-primary btn-large" download="cropscan.apk">
+            <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary btn-large" target="_blank" rel="noopener noreferrer">
               Download for Android <Download size={20} />
             </a>
             

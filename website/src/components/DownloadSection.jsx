@@ -20,7 +20,7 @@ const DownloadSection = () => {
               <span className="info-item">135MB</span>
             </div>
             <div className="download-buttons">
-              <a href="/downloads/cropscan.apk" className="btn btn-download-primary" download="cropscan.apk">
+              <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-download-primary" target="_blank" rel="noopener noreferrer">
                 <div className="btn-icon">
                   <Download size={24} />
                 </div>
