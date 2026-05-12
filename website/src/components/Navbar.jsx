@@ -30,9 +30,9 @@ const Navbar = () => {
           <a href="#features" className="nav-link">Features</a>
           <a href="#how-it-works" className="nav-link">How It Works</a>
           <a href="#faq" className="nav-link">FAQ</a>
-          <button className="btn btn-primary">
+          <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
             Download App <Download size={18} />
-          </button>
+          </a>
         </div>
 
         {/* Mobile Toggle */}
@@ -54,9 +54,9 @@ const Navbar = () => {
               <a href="#features" onClick={() => setIsOpen(false)}>Features</a>
               <a href="#how-it-works" onClick={() => setIsOpen(false)}>How It Works</a>
               <a href="#faq" onClick={() => setIsOpen(false)}>FAQ</a>
-              <button className="btn btn-primary full-width">
+              <a href="https://github.com/Balodigital/CropWatch-1.0/releases/download/Agrictulture/cropscan.apk" className="btn btn-primary full-width" target="_blank" rel="noopener noreferrer">
                 Download App <Download size={18} />
-              </button>
+              </a>
             </div>
           </motion.div>
         )}
